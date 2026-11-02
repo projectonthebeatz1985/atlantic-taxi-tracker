@@ -3,50 +3,52 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#092b3b">
+<meta name="theme-color" content="#050805">
 <meta name="description" content="Private, offline-first taxi fare and shift tracker.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-512.png">
 <title>Atlantic Taxi Tracker</title>
 <style>
-:root{--navy:#092b3b;--blue:#12516b;--gold:#f0b84b;--bg:#f3f6f8;--ink:#142b36;--muted:#61727b;--line:#dce4e8;--green:#16794b;--red:#b53d3d}
+:root{--navy:#071008;--blue:#102b13;--gold:#39f05a;--bg:#080d09;--ink:#e8f5e9;--muted:#9ab09c;--line:#263b29;--green:#39f05a;--red:#ff6262}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-header{background:linear-gradient(135deg,var(--navy),var(--blue));color:white;padding:20px 16px 16px;position:sticky;top:0;z-index:3;box-shadow:0 3px 12px #092b3b22}
+header{background:linear-gradient(135deg,#020402,#102713 70%,#061008);color:white;padding:20px 16px 16px;position:sticky;top:0;z-index:3;box-shadow:0 3px 12px #092b3b22}
 .head{max-width:850px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:12px}
-.brand{display:flex;align-items:center;gap:11px}.brand img{width:43px;height:43px}.brand h1{font-size:19px;margin:0}.brand small{color:#c7dce5}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}.brand img{width:min(46vw,220px);height:auto;max-height:66px;object-fit:contain;display:block}.brand h1{font-size:13px;margin:2px 0 0;color:#d9f7dc;letter-spacing:.04em}.brand small{color:#9ccea3;font-size:11px}
 main{max-width:850px;margin:0 auto;padding:16px 14px 100px}
 nav{display:flex;gap:7px;overflow:auto;padding:12px 0 3px;max-width:850px;margin:auto}
-nav button{white-space:nowrap;border:1px solid #ffffff44;background:#ffffff12;color:#fff;border-radius:20px;padding:8px 13px;font-weight:650}
-nav button.active{background:var(--gold);color:#1e2c32;border-color:var(--gold)}
+nav button{white-space:nowrap;border:1px solid #39f05a55;background:#ffffff08;color:#e9ffeb;border-radius:20px;padding:8px 13px;font-weight:650}
+nav button.active{background:#39f05a;color:#041006;border-color:#39f05a}
 .panel{display:none}.panel.active{display:block}
-.card{background:white;border:1px solid var(--line);border-radius:17px;padding:16px;margin:0 0 13px;box-shadow:0 2px 8px #102d3a08}
+.card{background:#101812;border:1px solid var(--line);border-radius:17px;padding:16px;margin:0 0 13px;box-shadow:0 2px 8px #102d3a08}
 h2{font-size:19px;margin:0 0 13px}h3{font-size:15px;margin:0 0 8px}
 .stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.stat{background:#f1f6f8;border-radius:13px;padding:13px}.stat strong{display:block;font-size:25px;color:var(--navy);font-variant-numeric:tabular-nums}.stat span{font-size:12px;color:var(--muted)}
+.stat{background:#17251a;border:1px solid #29432d;border-radius:13px;padding:13px}.stat strong{display:block;font-size:25px;color:#65ff79;font-variant-numeric:tabular-nums}.stat span{font-size:12px;color:var(--muted)}
 label{display:block;font-size:13px;font-weight:700;margin:12px 0 5px}
-input,textarea,select{width:100%;border:1px solid #cbd7dd;border-radius:10px;padding:12px;font:inherit;background:white;color:var(--ink);min-height:46px}
+input,textarea,select{width:100%;border:1px solid #36523a;border-radius:10px;padding:12px;font:inherit;background:#080e09;color:var(--ink);min-height:46px}
 textarea{min-height:75px;resize:vertical}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-button,.btn{border:0;border-radius:11px;padding:12px 15px;background:var(--navy);color:white;font:700 14px system-ui;cursor:pointer;min-height:44px}
-button.secondary,.btn.secondary{background:#eaf0f3;color:var(--navy);border:1px solid var(--line)}
-button.gold{background:var(--gold);color:#2d2b20}
-button.danger{background:#fff0f0;color:var(--red);border:1px solid #f1caca}
+button,.btn{border:0;border-radius:11px;padding:12px 15px;background:#1d9c35;color:white;font:700 14px system-ui;cursor:pointer;min-height:44px}
+button.secondary,.btn.secondary{background:#1b2a1e;color:#dfffe2;border:1px solid #36523a}
+button.gold{background:#39f05a;color:#041006}
+button.danger{background:#301416;color:#ff8585;border:1px solid #693238}
 button:disabled{opacity:.45;cursor:not-allowed}
 .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}
 .actions button{flex:1}
 .ride{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:9px;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
 .ride small{display:block;color:var(--muted);margin-top:4px;line-height:1.4}.money{font-weight:800;white-space:nowrap;color:var(--green)}
-.muted{color:var(--muted);font-size:13px}.empty{padding:22px;text-align:center;color:var(--muted);background:#f6f8f9;border-radius:12px}
-.notice{padding:11px 12px;border-radius:11px;background:#fff8e7;color:#6b511c;font-size:13px;line-height:1.45}
+.muted{color:var(--muted);font-size:13px}.empty{padding:22px;text-align:center;color:var(--muted);background:#111a13;border-radius:12px}
+.notice{padding:11px 12px;border-radius:11px;background:#26301a;color:#d7ef9e;font-size:13px;line-height:1.45}
 hr{border:0;border-top:1px solid var(--line);margin:14px 0}
 footer{text-align:center;color:var(--muted);font-size:12px;padding:18px}
 @media(min-width:650px){.stats{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.meter-grid{overflow-x:auto;margin-top:12px}.meter-head,.meter-row{display:grid;grid-template-columns:1.05fr 1fr 1fr .75fr;gap:6px;align-items:center;min-width:520px;padding:7px 5px;border-bottom:1px solid var(--line)}.meter-head{font-size:10px;font-weight:800;color:var(--muted)}.meter-row b{font-size:12px}.meter-row input{min-width:0;padding:8px 6px;min-height:40px;font-size:13px}.meter-row output{font-size:12px;font-weight:800;text-align:center;color:#65ff79}
 </style>
 </head>
 <body>
 <header>
  <div class="head">
-  <div class="brand"><img src="icon.svg" alt=""><div><h1>Atlantic Taxi Tracker</h1><small>Shift fares • earnings • reports</small></div></div>
+  <div class="brand"><div><img src="atlantic-cab-logo.png" alt="Atlantic Cab logo"><h1>ATLANTIC TAXI TRACKER</h1><small>Shift fares • earnings • reports</small></div></div>
   <button id="installBtn" class="gold" hidden>Install</button>
  </div>
  <nav id="tabs">
@@ -70,6 +72,22 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:18px}
   </div>
   <p class="muted">Pay split: you receive 50% of metered fares plus 100% of tips. The company receives the other 50% of metered fares plus the $9 cab lease per shift. Tips are never split.</p>
   <div class="actions"><button id="startShift" class="gold">Start shift</button><button id="endShift" class="secondary" disabled>End shift & report</button></div>
+ </div>
+ <div class="card" id="meterManifestCard">
+  <h2>Meter readings & vehicle checks</h2>
+  <p class="muted">Enter the beginning readings when you start, then the ending readings before you finish. The app calculates each total automatically.</p>
+  <div class="row"><div><label for="cabNumber">Cab #</label><input id="cabNumber" placeholder="Cab number"></div><div><label for="shiftType">Shift</label><select id="shiftType"><option value="D">Day (D)</option><option value="N">Night (N)</option></select></div></div>
+  <div class="meter-grid">
+   <div class="meter-head"><span>METER ITEM</span><span>BEGINNING</span><span>ENDING</span><span>TOTAL</span></div>
+   <div class="meter-row"><b>Odometer</b><input id="odometerStart" type="number" step="0.1" placeholder="Start"><input id="odometerEnd" type="number" step="0.1" placeholder="End"><output id="odometerTotal">—</output></div>
+   <div class="meter-row"><b>Cash ($)</b><input id="cashStart" type="number" step="0.01" placeholder="Start"><input id="cashEnd" type="number" step="0.01" placeholder="End"><output id="cashTotal">—</output></div>
+   <div class="meter-row"><b>Extras ($)</b><input id="extrasStart" type="number" step="0.01" placeholder="Start"><input id="extrasEnd" type="number" step="0.01" placeholder="End"><output id="extrasTotal">—</output></div>
+   <div class="meter-row"><b>Meter miles</b><input id="meterMilesStart" type="number" step="0.1" placeholder="Start"><input id="meterMilesEnd" type="number" step="0.1" placeholder="End"><output id="meterMilesTotal">—</output></div>
+   <div class="meter-row"><b>Paid miles</b><input id="paidMilesStart" type="number" step="0.1" placeholder="Start"><input id="paidMilesEnd" type="number" step="0.1" placeholder="End"><output id="paidMilesTotal">—</output></div>
+   <div class="meter-row"><b>Trips</b><input id="tripsStart" type="number" step="1" placeholder="Start"><input id="tripsEnd" type="number" step="1" placeholder="End"><output id="tripsTotal">—</output></div>
+  </div>
+  <div class="row"><div><label for="checkOil">Check oil</label><select id="checkOil"><option value="">Not recorded</option><option>OK</option><option>Needs attention</option></select></div><div><label for="checkTrans">Check transmission</label><select id="checkTrans"><option value="">Not recorded</option><option>OK</option><option>Needs attention</option></select></div></div>
+  <button id="saveManifest" class="secondary" style="margin-top:13px">Save meter readings</button>
  </div>
  <div class="card">
   <h2>Add a passenger / ride</h2>
@@ -134,6 +152,11 @@ function allShifts(){return [...data.shifts,...(data.active?[data.active]:[])].s
 function totals(s){
  return (s.rides||[]).reduce((a,r)=>({fare:a.fare+Number(r.fare),tips:a.tips+Number(r.tip||0),count:a.count+1}),{fare:0,tips:0,count:0});
 }
+const manifestFields=['cabNumber','shiftType','odometerStart','odometerEnd','cashStart','cashEnd','extrasStart','extrasEnd','meterMilesStart','meterMilesEnd','paidMilesStart','paidMilesEnd','tripsStart','tripsEnd','checkOil','checkTrans'];
+function manifestFor(s){return s.manifest||{}}
+function manifestDiff(m,a,b){if(m[a]===''||m[b]===''||m[a]==null||m[b]==null)return null;return Number(m[b])-Number(m[a])}
+function fillManifest(){const m=manifestFor(data.active||{});manifestFields.forEach(k=>{const el=$(k);if(el)el.value=m[k]??(k==='shiftType'?'D':'')});updateManifestTotals()}
+function updateManifestTotals(){const m={};manifestFields.forEach(k=>{if($(k))m[k]=$(k).value});[['odometer','odometerStart','odometerEnd'],['cash','cashStart','cashEnd'],['extras','extrasStart','extrasEnd'],['meterMiles','meterMilesStart','meterMilesEnd'],['paidMiles','paidMilesStart','paidMilesEnd'],['trips','tripsStart','tripsEnd']].forEach(([name,a,b])=>{const v=manifestDiff(m,a,b);const out=$(name+'Total');if(out)out.textContent=v===null?'—':(name==='cash'||name==='extras'?money(v):String(v))})}
 function activeShift(){return data.active}
 function render(){
  const s=activeShift(), t=s?totals(s):{fare:0,tips:0,count:0};
@@ -146,8 +169,10 @@ function render(){
  renderHistory();renderYear();
 }
 function rideHtml(r,i,canDelete){return `<div class="ride"><div><b>${esc(r.pickup)}</b><small>To: ${esc(r.dropoff)}<br>${new Date(r.time).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}${r.note?' • '+esc(r.note):''}${Number(r.tip)?'<br>Tip: '+money(r.tip):''}</small></div><div style="text-align:right"><div class="money">${money(Number(r.fare)+Number(r.tip||0))}</div>${canDelete?`<button class="danger" style="padding:6px 9px;min-height:32px;margin-top:7px" data-delete-ride="${i}">Delete</button>`:''}</div></div>`}
-$('startShift').onclick=()=>{if(data.active)return;data.active={id:crypto.randomUUID?.()||String(Date.now()),started:new Date().toISOString(),ended:null,rides:[]};persist()};
-$('endShift').onclick=()=>{const s=data.active;if(!s)return;if(!confirm('End this shift and save it to your history?'))return;s.ended=new Date().toISOString();data.shifts.push(s);data.active=null;persist();showReport(s)};
+$('startShift').onclick=()=>{if(data.active)return;data.active={id:crypto.randomUUID?.()||String(Date.now()),started:new Date().toISOString(),ended:null,rides:[],manifest:{shiftType:'D'}};persist();fillManifest()};
+$('saveManifest').onclick=()=>{if(!data.active){alert('Start your shift first, then enter the meter readings.');return}const m={};manifestFields.forEach(k=>m[k]=$(k).value);data.active.manifest=m;persist();alert('Meter readings and vehicle checks saved to this shift.')};
+manifestFields.forEach(k=>{if($(k))$(k).addEventListener('input',updateManifestTotals);if($(k))$(k).addEventListener('change',updateManifestTotals)});
+$('endShift').onclick=()=>{const s=data.active;if(!s)return;const mm={};manifestFields.forEach(k=>mm[k]=$(k).value);s.manifest=mm;if(!confirm('End this shift and save it to your history?'))return;s.ended=new Date().toISOString();data.shifts.push(s);data.active=null;persist();showReport(s)};
 $('rideForm').onsubmit=e=>{e.preventDefault();if(!data.active){alert('Start your shift first.');return}const fare=Number($('fare').value),tip=Number($('tip').value||0);if(!Number.isFinite(fare)||fare<0||tip<0){alert('Enter valid fare and tip amounts.');return}data.active.rides.push({pickup:$('pickup').value.trim(),dropoff:$('dropoff').value.trim(),fare:fare.toFixed(2),tip:tip.toFixed(2),note:$('rideNote').value.trim(),time:new Date().toISOString()});$('rideForm').reset();persist()};
 $('currentRides').addEventListener('click',e=>{const b=e.target.closest('[data-delete-ride]');if(!b||!data.active)return;const i=Number(b.dataset.deleteRide);if(confirm('Delete this ride?')){data.active.rides.splice(i,1);persist()}});
 function showReport(s){
@@ -162,6 +187,11 @@ Driver: ${data.settings.driver||'Not specified'}
 Date: ${localDate(s.started)}
 Started: ${new Date(s.started).toLocaleTimeString()}
 Ended: ${s.ended?new Date(s.ended).toLocaleTimeString():'—'}
+Cab #: ${manifestFor(s).cabNumber||'—'}   Shift: ${manifestFor(s).shiftType||'—'}
+
+METER READINGS (BEGINNING | ENDING | TOTAL)
+${[['ODOMETER','odometer'],['CASH','cash'],['EXTRAS','extras'],['METER MILES','meterMiles'],['PAID MILES','paidMiles'],['TRIPS','trips']].map(([label,key])=>{const m=manifestFor(s),a=m[key+'Start']??'',b=m[key+'End']??'',v=manifestDiff(m,key+'Start',key+'End');return `${label}: ${a||'—'} | ${b||'—'} | ${v===null?'—':v}`}).join('\n')}
+CHECK OIL: ${manifestFor(s).checkOil||'—'}   CHECK TRANS: ${manifestFor(s).checkTrans||'—'}
 
 PASSENGER MANIFEST
 P/U TIME | P/U LOCATION | DESTINATION | METER FARE
@@ -184,10 +214,14 @@ async function shareText(text,s){
 function makePdf(s){
  if(!window.jspdf){alert('PDF tool did not load. Please connect to the internet once, then try again, or use Share text.');return}
  const {jsPDF}=window.jspdf,doc=new jsPDF(),t=totals(s);let y=18;
- doc.setFillColor(9,43,59);doc.rect(0,0,210,34,'F');doc.setTextColor(255,255,255);doc.setFontSize(18);doc.text('ATLANTIC TAXI TRACKER',14,17);doc.setFontSize(10);doc.text('DRIVERS MANIFEST / SHIFT REPORT',14,25);
+ doc.setFillColor(5,18,7);doc.rect(0,0,210,34,'F');doc.setTextColor(72,245,96);doc.setFontSize(18);doc.text('ATLANTIC CAB',14,17);doc.setFontSize(10);doc.text('DRIVERS MANIFEST / SHIFT REPORT',14,25);
  doc.setTextColor(25,45,55);doc.setFontSize(11);y=46;
  const lines=[`Driver: ${data.settings.driver||'Not specified'}`,`Date: ${localDate(s.started)}`,`Started: ${new Date(s.started).toLocaleString()}`,`Ended: ${s.ended?new Date(s.ended).toLocaleString():'—'}`,`Passengers / trips: ${t.count}`,`TOTAL METERED FARES: ${money(t.fare)}`,`TOTAL TIPS (100% TO DRIVER): ${money(t.tips)}`,`DRIVER: 50% meter (${money(t.fare*0.5)}) + tips (${money(t.tips)}) = ${money(t.fare*0.5+t.tips)}`,`COMPANY: 50% meter (${money(t.fare*0.5)}) + $9 cab lease = ${money(t.fare*0.5+9)}`];
  lines.forEach((line,i)=>{doc.setFont(undefined,i===7?'bold':'normal');doc.text(line,14,y);y+=7});
+ y+=5;const mm=manifestFor(s);doc.setFont(undefined,'bold');doc.text('METER READINGS',14,y);y+=7;doc.setFont(undefined,'normal');
+ const mrows=[['ITEM','BEGINNING','ENDING','TOTAL'],...[['ODOMETER','odometer'],['CASH','cash'],['EXTRAS','extras'],['METER MILES','meterMiles'],['PAID MILES','paidMiles'],['TRIPS','trips']].map(([label,key])=>{const a=mm[key+'Start']??'',b=mm[key+'End']??'',v=manifestDiff(mm,key+'Start',key+'End');return [label,a||'—',b||'—',v===null?'—':String(v)]})];
+ mrows.forEach((row,i)=>{if(y>275){doc.addPage();y=18}doc.setFont(undefined,i===0?'bold':'normal');doc.text(row.map(String).join('    |    '),14,y);y+=6});
+ doc.setFont(undefined,'normal');doc.text(`CHECK OIL: ${mm.checkOil||'—'}     CHECK TRANS: ${mm.checkTrans||'—'}     CAB #: ${mm.cabNumber||'—'}     SHIFT: ${mm.shiftType||'—'}`,14,y);y+=9;
  y+=5;doc.setFont(undefined,'bold');doc.text('RIDE DETAILS',14,y);y+=8;doc.setFont(undefined,'normal');
  s.rides.forEach((r,i)=>{const content=doc.splitTextToSize(`${i+1}. ${r.pickup} to ${r.dropoff} | Fare ${money(r.fare)} | Tip ${money(r.tip||0)}${r.note?' | '+r.note:''}`,180);if(y+content.length*6>280){doc.addPage();y=18}doc.text(content,14,y);y+=content.length*6+3});
  doc.save(`Atlantic-Taxi-Shift-${localDate(s.started)}.pdf`);
@@ -198,10 +232,24 @@ function renderHistory(){
  const months=['January','February','March','April','May','June','July','August','September','October','November','December'],m=$('historyMonth'),oldm=m.value;
  m.innerHTML='<option value="">All months</option>'+months.map((x,i)=>`<option value="${i}">${x}</option>`).join('');m.value=oldm;
  const filtered=allShifts().filter(s=>(!sel.value||new Date(s.started).getFullYear()===Number(sel.value))&&(!m.value||new Date(s.started).getMonth()===Number(m.value)));
- $('historyList').innerHTML=filtered.length?filtered.map(s=>{const t=totals(s);return `<div class="card" style="margin-top:10px;background:#fbfcfd"><div style="display:flex;justify-content:space-between;gap:10px"><div><b>${localDate(s.started)}</b><div class="muted">${t.count} passengers • ${new Date(s.started).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})} – ${s.ended?new Date(s.ended).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}):'Active'}</div></div><b class="money">${money(t.fare+t.tips)}</b></div><div class="actions"><button class="secondary" data-report="${s.id}">Share report</button><button class="secondary" data-pdf="${s.id}">PDF</button></div><details><summary class="muted">View rides</summary>${s.rides.map(r=>rideHtml(r,0,false)).join('')||'<p class="muted">No rides recorded.</p>'}</details></div>`}).join(''):'<div class="empty">No shifts found for this filter.</div>';
+ $('historyList').innerHTML=filtered.length?filtered.map(s=>{const t=totals(s);return `<div class="card" style="margin-top:10px;background:#fbfcfd"><div style="display:flex;justify-content:space-between;gap:10px"><div><b>${localDate(s.started)}</b><div class="muted">${t.count} passengers • ${new Date(s.started).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})} – ${s.ended?new Date(s.ended).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}):'Active'}</div></div><b class="money">${money(t.fare+t.tips)}</b></div><div class="actions"><button class="secondary" data-report="${s.id}">Share report</button><button class="secondary" data-pdf="${s.id}">PDF</button><button class="danger" data-delete-shift="${s.id}">Delete shift</button></div><details><summary class="muted">View rides</summary>${s.rides.map(r=>rideHtml(r,0,false)).join('')||'<p class="muted">No rides recorded.</p>'}</details></div>`}).join(''):'<div class="empty">No shifts found for this filter.</div>';
 }
 $('historyYear').onchange=renderHistory;$('historyMonth').onchange=renderHistory;
-$('historyList').addEventListener('click',e=>{const b=e.target.closest('[data-report],[data-pdf]');if(!b)return;const s=allShifts().find(x=>x.id===b.dataset.report||x.id===b.dataset.pdf);if(!s)return;if(b.dataset.pdf)makePdf(s);else shareText(reportText(s),s)});
+$('historyList').addEventListener('click',e=>{
+ const del=e.target.closest('[data-delete-shift]');
+ if(del){
+  const id=del.dataset.deleteShift;
+  const shift=allShifts().find(x=>x.id===id);
+  if(!shift)return;
+  if(!confirm(`Permanently delete the shift from ${localDate(shift.started)} and all its ride records? This cannot be undone.`))return;
+  if(data.active&&data.active.id===id)data.active=null;
+  data.shifts=data.shifts.filter(x=>x.id!==id);
+  persist();render();return;
+ }
+ const b=e.target.closest('[data-report],[data-pdf]');if(!b)return;
+ const s=allShifts().find(x=>x.id===b.dataset.report||x.id===b.dataset.pdf);if(!s)return;
+ if(b.dataset.pdf)makePdf(s);else shareText(reportText(s),s)
+});
 function renderYear(){
  const years=[...new Set(allShifts().map(s=>new Date(s.started).getFullYear()))].sort((a,b)=>b-a),ySel=$('yearSelect'),old=ySel.value,year=old?Number(old):new Date().getFullYear();
  ySel.innerHTML=[...new Set([new Date().getFullYear(),...years])].sort((a,b)=>b-a).map(y=>`<option value="${y}">${y}</option>`).join('');ySel.value=String(year);
@@ -218,11 +266,11 @@ $('importJson').onclick=()=>$('backupFile').click();
 $('backupFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!Array.isArray(d.shifts)||!d.settings)throw Error();if(!confirm('Import this backup? It will replace the data currently stored on this device.'))return;data=d;persist();fillSettings();alert('Backup imported.')}catch{alert('That file does not look like a valid Atlantic Taxi Tracker backup.')}e.target.value=''};
 $('exportCsv').onclick=()=>{const rows=[['Shift date','Shift started','Shift ended','Pickup','Drop-off','Fare','Tip','Notes']];allShifts().forEach(s=>s.rides.forEach(r=>rows.push([localDate(s.started),s.started,s.ended||'',r.pickup,r.dropoff,r.fare,r.tip||0,r.note||''])));const csv=rows.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');download('Atlantic-Taxi-Rides.csv',csv,'text/csv')};
 function download(name,content,type){const a=document.createElement('a'),u=URL.createObjectURL(new Blob([content],{type}));a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
-document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('active',x.id===b.dataset.tab));if(b.dataset.tab==='settings')fillSettings();render()});
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('active',x.id===b.dataset.tab));if(b.dataset.tab==='settings')fillSettings();if(b.dataset.tab==='shift')fillManifest();render()});
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;$('installBtn').hidden=false});
 $('installBtn').onclick=async()=>{if(!deferredInstall)return;deferredInstall.prompt();await deferredInstall.userChoice;deferredInstall=null;$('installBtn').hidden=true};
 if('serviceWorker'in navigator && location.protocol.startsWith('http'))window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
-render();fillSettings();
+render();fillSettings();fillManifest();
 })();
 </script>
 </body></html>

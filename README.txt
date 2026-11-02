@@ -39,3 +39,15 @@ Metered fares are split 50/50. The driver receives half of metered fares PLUS 10
 
 ## Cab lease
 A $9 cab lease is added to the company's amount for every completed shift. Driver pay remains 50% of metered fares plus 100% of tips. Company amount is 50% of metered fares plus the $9 lease. Tips are not part of the fare split.
+
+
+## Meter manifest entry fields
+The Current shift page now has a Meter readings & vehicle checks section with beginning and ending fields for odometer, cash, extras, meter miles, paid miles, and trip counter. Each total is calculated automatically. Cab number, day/night shift, oil check and transmission check are saved with the shift and included in text/PDF reports.
+
+
+## Delete shifts
+The shift history includes a Delete shift action. It asks for confirmation before permanently removing the selected shift and its ride records, then refreshes totals and history.
+
+
+## Atlantic Cab green branding update
+The app now uses the supplied green Atlantic Cab logo, a black and emerald-green interface, a matching Android launcher icon, and green/black PDF report header. Upload all updated files including atlantic-cab-logo.png and icon-512.png to the GitHub Pages repository root. The service worker cache version was updated so phones fetch the new design.
