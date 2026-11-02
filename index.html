@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#092b3b">
+<meta name="description" content="Private, offline-first taxi fare and shift tracker.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<title>Atlantic Taxi Tracker</title>
+<style>
+:root{--navy:#092b3b;--blue:#12516b;--gold:#f0b84b;--bg:#f3f6f8;--ink:#142b36;--muted:#61727b;--line:#dce4e8;--green:#16794b;--red:#b53d3d}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{background:linear-gradient(135deg,var(--navy),var(--blue));color:white;padding:20px 16px 16px;position:sticky;top:0;z-index:3;box-shadow:0 3px 12px #092b3b22}
+.head{max-width:850px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:center;gap:11px}.brand img{width:43px;height:43px}.brand h1{font-size:19px;margin:0}.brand small{color:#c7dce5}
+main{max-width:850px;margin:0 auto;padding:16px 14px 100px}
+nav{display:flex;gap:7px;overflow:auto;padding:12px 0 3px;max-width:850px;margin:auto}
+nav button{white-space:nowrap;border:1px solid #ffffff44;background:#ffffff12;color:#fff;border-radius:20px;padding:8px 13px;font-weight:650}
+nav button.active{background:var(--gold);color:#1e2c32;border-color:var(--gold)}
+.panel{display:none}.panel.active{display:block}
+.card{background:white;border:1px solid var(--line);border-radius:17px;padding:16px;margin:0 0 13px;box-shadow:0 2px 8px #102d3a08}
+h2{font-size:19px;margin:0 0 13px}h3{font-size:15px;margin:0 0 8px}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.stat{background:#f1f6f8;border-radius:13px;padding:13px}.stat strong{display:block;font-size:25px;color:var(--navy);font-variant-numeric:tabular-nums}.stat span{font-size:12px;color:var(--muted)}
+label{display:block;font-size:13px;font-weight:700;margin:12px 0 5px}
+input,textarea,select{width:100%;border:1px solid #cbd7dd;border-radius:10px;padding:12px;font:inherit;background:white;color:var(--ink);min-height:46px}
+textarea{min-height:75px;resize:vertical}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button,.btn{border:0;border-radius:11px;padding:12px 15px;background:var(--navy);color:white;font:700 14px system-ui;cursor:pointer;min-height:44px}
+button.secondary,.btn.secondary{background:#eaf0f3;color:var(--navy);border:1px solid var(--line)}
+button.gold{background:var(--gold);color:#2d2b20}
+button.danger{background:#fff0f0;color:var(--red);border:1px solid #f1caca}
+button:disabled{opacity:.45;cursor:not-allowed}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}
+.actions button{flex:1}
+.ride{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:9px;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.ride small{display:block;color:var(--muted);margin-top:4px;line-height:1.4}.money{font-weight:800;white-space:nowrap;color:var(--green)}
+.muted{color:var(--muted);font-size:13px}.empty{padding:22px;text-align:center;color:var(--muted);background:#f6f8f9;border-radius:12px}
+.notice{padding:11px 12px;border-radius:11px;background:#fff8e7;color:#6b511c;font-size:13px;line-height:1.45}
+hr{border:0;border-top:1px solid var(--line);margin:14px 0}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:18px}
+@media(min-width:650px){.stats{grid-template-columns:repeat(4,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+<header>
+ <div class="head">
+  <div class="brand"><img src="icon.svg" alt=""><div><h1>Atlantic Taxi Tracker</h1><small>Shift fares • earnings • reports</small></div></div>
+  <button id="installBtn" class="gold" hidden>Install</button>
+ </div>
+ <nav id="tabs">
+  <button class="active" data-tab="shift">Current shift</button>
+  <button data-tab="history">Shift history</button>
+  <button data-tab="year">Yearly totals</button>
+  <button data-tab="settings">Settings & backup</button>
+ </nav>
+</header>
+<main>
+<section id="shift" class="panel active">
+ <div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><h2 style="margin:0">Your shift</h2><span id="shiftStatus" class="muted">No active shift</span></div>
+  <div class="stats" style="margin-top:14px">
+   <div class="stat"><strong id="todayTotal">$0.00</strong><span>Shift earnings</span></div>
+   <div class="stat"><strong id="rideCount">0</strong><span>Passengers</span></div>
+   <div class="stat"><strong id="avgFare">$0.00</strong><span>Average fare</span></div>
+   <div class="stat"><strong id="tipTotal">$0.00</strong><span>Tips recorded</span></div>
+   <div class="stat"><strong id="driverShare">$0.00</strong><span>Your pay (50% meter + tips)</span></div>
+   <div class="stat"><strong id="companyShare">$0.00</strong><span>Company share (50% meter + $9 lease)</span></div>
+  </div>
+  <p class="muted">Pay split: you receive 50% of metered fares plus 100% of tips. The company receives the other 50% of metered fares plus the $9 cab lease per shift. Tips are never split.</p>
+  <div class="actions"><button id="startShift" class="gold">Start shift</button><button id="endShift" class="secondary" disabled>End shift & report</button></div>
+ </div>
+ <div class="card">
+  <h2>Add a passenger / ride</h2>
+  <form id="rideForm">
+   <label for="pickup">Pickup address</label><input id="pickup" required placeholder="Street address or pickup location" autocomplete="street-address">
+   <label for="dropoff">Drop-off address</label><input id="dropoff" required placeholder="Destination address">
+   <div class="row">
+    <div><label for="fare">Fare ($)</label><input id="fare" type="number" min="0" step="0.01" required inputmode="decimal" placeholder="0.00"></div>
+    <div><label for="tip">Tip ($) — optional</label><input id="tip" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00" value="0"></div>
+   </div>
+   <label for="rideNote">Notes — optional</label><input id="rideNote" placeholder="Extra details, if needed">
+   <div class="actions"><button type="submit" id="saveRide">Save ride</button><button type="reset" class="secondary">Clear</button></div>
+  </form>
+  <p class="muted">A ride can only be added while a shift is active. Fare and tip are kept separately in the report.</p>
+ </div>
+ <div class="card"><h2>Rides this shift</h2><div id="currentRides" class="empty">Start a shift to begin recording rides.</div></div>
+</section>
+
+<section id="history" class="panel">
+ <div class="card"><h2>Shift history</h2><div class="row"><div><label for="historyYear">Filter by year</label><select id="historyYear"></select></div><div><label for="historyMonth">Filter by month</label><select id="historyMonth"><option value="">All months</option></select></div></div><div id="historyList"></div></div>
+</section>
+
+<section id="year" class="panel">
+ <div class="card"><h2>Yearly earnings</h2><label for="yearSelect">Choose year</label><select id="yearSelect"></select>
+  <div class="stats" style="margin-top:12px">
+   <div class="stat"><strong id="yearTotal">$0.00</strong><span>Total earnings</span></div>
+   <div class="stat"><strong id="yearShifts">0</strong><span>Shifts worked</span></div>
+   <div class="stat"><strong id="yearRides">0</strong><span>Passengers</span></div>
+   <div class="stat"><strong id="yearTips">$0.00</strong><span>Tips</span></div>
+  </div><hr><h3>Monthly breakdown</h3><div id="monthlyBreakdown"></div>
+ </div>
+</section>
+
+<section id="settings" class="panel">
+ <div class="card"><h2>Boss report details</h2>
+  <label for="bossName">Boss / company name — optional</label><input id="bossName" placeholder="Company or boss name">
+  <label for="bossPhone">Boss phone number — optional</label><input id="bossPhone" type="tel" placeholder="For SMS sharing, e.g. +1 252 555 0123">
+  <label for="driverName">Your name — optional</label><input id="driverName" placeholder="Driver name">
+  <button id="saveSettings">Save details</button>
+ </div>
+ <div class="card"><h2>Backup & data</h2><p class="muted">Your records are stored on this device in this browser. Export a backup regularly, especially before changing phones or clearing browser data.</p>
+  <div class="actions"><button id="exportJson">Export full backup</button><button id="importJson" class="secondary">Import backup</button><input type="file" id="backupFile" accept="application/json" hidden></div>
+  <div class="actions"><button id="exportCsv" class="secondary">Export rides as CSV</button></div>
+  <hr><div class="notice">Privacy: ride addresses and earnings stay on this device unless you choose to share or export a report. The app does not automatically send anything to your boss.</div>
+ </div>
+</section>
+<footer>Atlantic Taxi Tracker • Your records stay on this device</footer>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+<script>
+(() => {
+const KEY='atlanticTaxiTracker.v1';
+const $=id=>document.getElementById(id);
+const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(Number(n)||0);
+const dateKey=d=>new Date(d).toISOString().slice(0,10);
+const localDate=d=>{const x=new Date(d);return new Date(x.getTime()-x.getTimezoneOffset()*60000).toISOString().slice(0,10)};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let data=load(), deferredInstall=null;
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||{shifts:[],active:null,settings:{}}}catch{return {shifts:[],active:null,settings:{}}}}
+function persist(){localStorage.setItem(KEY,JSON.stringify(data));render()}
+function allShifts(){return [...data.shifts,...(data.active?[data.active]:[])].sort((a,b)=>b.started.localeCompare(a.started))}
+function totals(s){
+ return (s.rides||[]).reduce((a,r)=>({fare:a.fare+Number(r.fare),tips:a.tips+Number(r.tip||0),count:a.count+1}),{fare:0,tips:0,count:0});
+}
+function activeShift(){return data.active}
+function render(){
+ const s=activeShift(), t=s?totals(s):{fare:0,tips:0,count:0};
+ $('todayTotal').textContent=money(t.fare+t.tips);$('rideCount').textContent=t.count;$('avgFare').textContent=money(t.count?(t.fare+t.tips)/t.count:0);$('tipTotal').textContent=money(t.tips);
+ $('driverShare').textContent=money(t.fare*0.5+t.tips);$('companyShare').textContent=money(t.fare*0.5+9);
+ $('shiftStatus').textContent=s?'Started '+new Date(s.started).toLocaleString():'No active shift';
+ $('startShift').disabled=!!s;$('endShift').disabled=!s;$('saveRide').disabled=!s;
+ $('currentRides').className=s&&s.rides.length?'':'empty';
+ $('currentRides').innerHTML=s&&s.rides.length?s.rides.map((r,i)=>rideHtml(r,i,true)).join(''):'Start a shift to begin recording rides.';
+ renderHistory();renderYear();
+}
+function rideHtml(r,i,canDelete){return `<div class="ride"><div><b>${esc(r.pickup)}</b><small>To: ${esc(r.dropoff)}<br>${new Date(r.time).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}${r.note?' • '+esc(r.note):''}${Number(r.tip)?'<br>Tip: '+money(r.tip):''}</small></div><div style="text-align:right"><div class="money">${money(Number(r.fare)+Number(r.tip||0))}</div>${canDelete?`<button class="danger" style="padding:6px 9px;min-height:32px;margin-top:7px" data-delete-ride="${i}">Delete</button>`:''}</div></div>`}
+$('startShift').onclick=()=>{if(data.active)return;data.active={id:crypto.randomUUID?.()||String(Date.now()),started:new Date().toISOString(),ended:null,rides:[]};persist()};
+$('endShift').onclick=()=>{const s=data.active;if(!s)return;if(!confirm('End this shift and save it to your history?'))return;s.ended=new Date().toISOString();data.shifts.push(s);data.active=null;persist();showReport(s)};
+$('rideForm').onsubmit=e=>{e.preventDefault();if(!data.active){alert('Start your shift first.');return}const fare=Number($('fare').value),tip=Number($('tip').value||0);if(!Number.isFinite(fare)||fare<0||tip<0){alert('Enter valid fare and tip amounts.');return}data.active.rides.push({pickup:$('pickup').value.trim(),dropoff:$('dropoff').value.trim(),fare:fare.toFixed(2),tip:tip.toFixed(2),note:$('rideNote').value.trim(),time:new Date().toISOString()});$('rideForm').reset();persist()};
+$('currentRides').addEventListener('click',e=>{const b=e.target.closest('[data-delete-ride]');if(!b||!data.active)return;const i=Number(b.dataset.deleteRide);if(confirm('Delete this ride?')){data.active.rides.splice(i,1);persist()}});
+function showReport(s){
+ const t=totals(s),text=reportText(s);
+ const choice=confirm('Shift saved. OK = share report by text/message. Cancel = create PDF.');
+ if(choice)shareText(text,s);else makePdf(s);
+}
+function reportText(s){
+ const t=totals(s),driverPay=t.fare*0.5+t.tips,companyMeterShare=t.fare*0.5,leaseFee=9,companyPay=companyMeterShare+leaseFee;
+ return `${data.settings.company||'ATLANTIC CAB'}\\nDRIVERS MANIFEST / SHIFT REPORT
+Driver: ${data.settings.driver||'Not specified'}
+Date: ${localDate(s.started)}
+Started: ${new Date(s.started).toLocaleTimeString()}
+Ended: ${s.ended?new Date(s.ended).toLocaleTimeString():'—'}
+
+PASSENGER MANIFEST
+P/U TIME | P/U LOCATION | DESTINATION | METER FARE
+${s.rides.map((r,i)=>`${i+1}. ${new Date(r.time).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})} | ${r.pickup} | ${r.dropoff} | ${money(r.fare)}`).join('\\n')}
+
+Trips: ${t.count}
+TOTAL METERED FARES: ${money(t.fare)}
+TOTAL TIPS (100% TO DRIVER): ${money(t.tips)}
+
+DRIVER: 50% OF METERED FARES ${money(t.fare*0.5)} + ALL TIPS ${money(t.tips)} = ${money(driverPay)}
+COMPANY: 50% OF METERED FARES ${money(companyMeterShare)} + CAB LEASE ${money(leaseFee)} = ${money(companyPay)}
+
+Tips are NOT included in the 50/50 fare split.`;
+}
+async function shareText(text,s){
+ const phone=(data.settings.phone||'').replace(/[^\d+]/g,'');
+ if(navigator.share){try{await navigator.share({title:'Taxi shift report',text});return}catch(e){if(e.name==='AbortError')return}}
+ const sms='sms:'+phone+(phone?'?':'?')+'body='+encodeURIComponent(text);location.href=sms;
+}
+function makePdf(s){
+ if(!window.jspdf){alert('PDF tool did not load. Please connect to the internet once, then try again, or use Share text.');return}
+ const {jsPDF}=window.jspdf,doc=new jsPDF(),t=totals(s);let y=18;
+ doc.setFillColor(9,43,59);doc.rect(0,0,210,34,'F');doc.setTextColor(255,255,255);doc.setFontSize(18);doc.text('ATLANTIC TAXI TRACKER',14,17);doc.setFontSize(10);doc.text('DRIVERS MANIFEST / SHIFT REPORT',14,25);
+ doc.setTextColor(25,45,55);doc.setFontSize(11);y=46;
+ const lines=[`Driver: ${data.settings.driver||'Not specified'}`,`Date: ${localDate(s.started)}`,`Started: ${new Date(s.started).toLocaleString()}`,`Ended: ${s.ended?new Date(s.ended).toLocaleString():'—'}`,`Passengers / trips: ${t.count}`,`TOTAL METERED FARES: ${money(t.fare)}`,`TOTAL TIPS (100% TO DRIVER): ${money(t.tips)}`,`DRIVER: 50% meter (${money(t.fare*0.5)}) + tips (${money(t.tips)}) = ${money(t.fare*0.5+t.tips)}`,`COMPANY: 50% meter (${money(t.fare*0.5)}) + $9 cab lease = ${money(t.fare*0.5+9)}`];
+ lines.forEach((line,i)=>{doc.setFont(undefined,i===7?'bold':'normal');doc.text(line,14,y);y+=7});
+ y+=5;doc.setFont(undefined,'bold');doc.text('RIDE DETAILS',14,y);y+=8;doc.setFont(undefined,'normal');
+ s.rides.forEach((r,i)=>{const content=doc.splitTextToSize(`${i+1}. ${r.pickup} to ${r.dropoff} | Fare ${money(r.fare)} | Tip ${money(r.tip||0)}${r.note?' | '+r.note:''}`,180);if(y+content.length*6>280){doc.addPage();y=18}doc.text(content,14,y);y+=content.length*6+3});
+ doc.save(`Atlantic-Taxi-Shift-${localDate(s.started)}.pdf`);
+}
+function renderHistory(){
+ const years=[...new Set(allShifts().map(s=>new Date(s.started).getFullYear()))].sort((a,b)=>b-a),sel=$('historyYear'),old=sel.value;
+ sel.innerHTML='<option value="">All years</option>'+years.map(y=>`<option>${y}</option>`).join('');if(years.includes(Number(old)))sel.value=old;
+ const months=['January','February','March','April','May','June','July','August','September','October','November','December'],m=$('historyMonth'),oldm=m.value;
+ m.innerHTML='<option value="">All months</option>'+months.map((x,i)=>`<option value="${i}">${x}</option>`).join('');m.value=oldm;
+ const filtered=allShifts().filter(s=>(!sel.value||new Date(s.started).getFullYear()===Number(sel.value))&&(!m.value||new Date(s.started).getMonth()===Number(m.value)));
+ $('historyList').innerHTML=filtered.length?filtered.map(s=>{const t=totals(s);return `<div class="card" style="margin-top:10px;background:#fbfcfd"><div style="display:flex;justify-content:space-between;gap:10px"><div><b>${localDate(s.started)}</b><div class="muted">${t.count} passengers • ${new Date(s.started).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})} – ${s.ended?new Date(s.ended).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}):'Active'}</div></div><b class="money">${money(t.fare+t.tips)}</b></div><div class="actions"><button class="secondary" data-report="${s.id}">Share report</button><button class="secondary" data-pdf="${s.id}">PDF</button></div><details><summary class="muted">View rides</summary>${s.rides.map(r=>rideHtml(r,0,false)).join('')||'<p class="muted">No rides recorded.</p>'}</details></div>`}).join(''):'<div class="empty">No shifts found for this filter.</div>';
+}
+$('historyYear').onchange=renderHistory;$('historyMonth').onchange=renderHistory;
+$('historyList').addEventListener('click',e=>{const b=e.target.closest('[data-report],[data-pdf]');if(!b)return;const s=allShifts().find(x=>x.id===b.dataset.report||x.id===b.dataset.pdf);if(!s)return;if(b.dataset.pdf)makePdf(s);else shareText(reportText(s),s)});
+function renderYear(){
+ const years=[...new Set(allShifts().map(s=>new Date(s.started).getFullYear()))].sort((a,b)=>b-a),ySel=$('yearSelect'),old=ySel.value,year=old?Number(old):new Date().getFullYear();
+ ySel.innerHTML=[...new Set([new Date().getFullYear(),...years])].sort((a,b)=>b-a).map(y=>`<option value="${y}">${y}</option>`).join('');ySel.value=String(year);
+ const ss=allShifts().filter(s=>new Date(s.started).getFullYear()===year),ts=ss.map(totals),sum=ts.reduce((a,t)=>({fare:a.fare+t.fare,tips:a.tips+t.tips,count:a.count+t.count}),{fare:0,tips:0,count:0});
+ $('yearTotal').textContent=money(sum.fare+sum.tips);$('yearShifts').textContent=ss.length;$('yearRides').textContent=sum.count;$('yearTips').textContent=money(sum.tips);
+ const months=Array.from({length:12},(_,i)=>{const sh=ss.filter(s=>new Date(s.started).getMonth()===i),v=sh.map(totals).reduce((a,t)=>a+t.fare+t.tips,0);return `<div class="ride"><div>${new Date(year,i,1).toLocaleString('en-US',{month:'long'})}<small>${sh.length} shifts</small></div><b>${money(v)}</b></div>`});
+ $('monthlyBreakdown').innerHTML=months.join('');
+}
+$('yearSelect').onchange=renderYear;
+$('saveSettings').onclick=()=>{data.settings={company:$('bossName').value.trim(),phone:$('bossPhone').value.trim(),driver:$('driverName').value.trim()};persist();alert('Details saved.')};
+function fillSettings(){$('bossName').value=data.settings.company||'';$('bossPhone').value=data.settings.phone||'';$('driverName').value=data.settings.driver||''}
+$('exportJson').onclick=()=>download('Atlantic-Taxi-Backup-'+localDate(new Date())+'.json',JSON.stringify(data,null,2),'application/json');
+$('importJson').onclick=()=>$('backupFile').click();
+$('backupFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!Array.isArray(d.shifts)||!d.settings)throw Error();if(!confirm('Import this backup? It will replace the data currently stored on this device.'))return;data=d;persist();fillSettings();alert('Backup imported.')}catch{alert('That file does not look like a valid Atlantic Taxi Tracker backup.')}e.target.value=''};
+$('exportCsv').onclick=()=>{const rows=[['Shift date','Shift started','Shift ended','Pickup','Drop-off','Fare','Tip','Notes']];allShifts().forEach(s=>s.rides.forEach(r=>rows.push([localDate(s.started),s.started,s.ended||'',r.pickup,r.dropoff,r.fare,r.tip||0,r.note||''])));const csv=rows.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');download('Atlantic-Taxi-Rides.csv',csv,'text/csv')};
+function download(name,content,type){const a=document.createElement('a'),u=URL.createObjectURL(new Blob([content],{type}));a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('active',x.id===b.dataset.tab));if(b.dataset.tab==='settings')fillSettings();render()});
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;$('installBtn').hidden=false});
+$('installBtn').onclick=async()=>{if(!deferredInstall)return;deferredInstall.prompt();await deferredInstall.userChoice;deferredInstall=null;$('installBtn').hidden=true};
+if('serviceWorker'in navigator && location.protocol.startsWith('http'))window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+render();fillSettings();
+})();
+</script>
+</body></html>
