@@ -98,6 +98,16 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:18px}
   <div class="row"><div><label for="checkOil">Check oil</label><select id="checkOil"><option value="">Not recorded</option><option>OK</option><option>Needs attention</option></select></div><div><label for="checkTrans">Check transmission</label><select id="checkTrans"><option value="">Not recorded</option><option>OK</option><option>Needs attention</option></select></div></div>
   <button id="saveManifest" class="secondary" style="margin-top:13px">Save meter readings</button>
  </div>
+ <div class="card" id="fareCalculatorCard">
+  <h2>Fare estimate calculator</h2>
+  <p class="muted">Estimate a trip using the cab meter rates: $3.50 to start, then $2.90 per mile.</p>
+  <label for="estimateMiles">Estimated trip distance (miles)</label>
+  <input id="estimateMiles" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Enter trip miles">
+  <div class="stat" style="margin-top:12px"><strong id="estimatedFare">$3.50</strong><span>Estimated meter fare</span></div>
+  <p class="muted" id="estimateBreakdown">$3.50 starting fare + $0.00 mileage</p>
+  <div class="actions"><button type="button" id="useEstimate" class="secondary">Use estimate for this ride</button><button type="button" id="clearEstimate" class="secondary">Clear miles</button></div>
+  <p class="muted">Estimate only. Actual meter fare may vary with the distance recorded by the meter and any applicable charges.</p>
+ </div>
  <div class="card">
   <h2>Add a passenger / ride</h2>
   <form id="rideForm">
@@ -230,6 +240,18 @@ $('startShift').onclick=()=>{if(data.active)return;data.active={id:crypto.random
 $('saveManifest').onclick=()=>{if(!data.active){alert('Start your shift first, then enter the meter readings.');return}const m={};manifestFields.forEach(k=>m[k]=$(k).value);data.active.manifest=m;persist();alert('Meter readings and vehicle checks saved to this shift.')};
 manifestFields.forEach(k=>{if($(k))$(k).addEventListener('input',updateManifestTotals);if($(k))$(k).addEventListener('change',updateManifestTotals)});
 $('endShift').onclick=()=>{const s=data.active;if(!s)return;const mm={};manifestFields.forEach(k=>mm[k]=$(k).value);s.manifest=mm;if(!confirm('End this shift and save it to your history?'))return;s.ended=new Date().toISOString();data.shifts.push(s);data.active=null;persist();showReport(s)};
+const METER_START=3.50, METER_PER_MILE=2.90;
+function updateFareEstimate(){
+ const raw=$('estimateMiles').value;
+ const miles=raw===''?0:Math.max(0,Number(raw)||0);
+ const mileage=miles*METER_PER_MILE;
+ const estimate=Math.round((METER_START+mileage+Number.EPSILON)*100)/100;
+ $('estimatedFare').textContent=money(estimate);
+ $('estimateBreakdown').textContent=`${money(METER_START)} starting fare + ${money(mileage)} mileage (${miles.toFixed(1)} mi)`;
+}
+$('estimateMiles').addEventListener('input',updateFareEstimate);
+$('useEstimate').onclick=()=>{if($('estimateMiles').value.trim()===''){alert('Enter the estimated trip miles first.');$('estimateMiles').focus();return}updateFareEstimate();$('fare').value=$('estimatedFare').textContent.replace(/[^0-9.]/g,'');$('fare').focus()};
+$('clearEstimate').onclick=()=>{$('estimateMiles').value='';updateFareEstimate()};
 $('rideForm').addEventListener('reset',()=>{document.querySelectorAll('.address-suggestions').forEach(x=>{x.classList.remove('open');x.innerHTML=''})});
 $('rideForm').onsubmit=e=>{e.preventDefault();if(!data.active){alert('Start your shift first.');return}const fare=Number($('fare').value),tip=Number($('tip').value||0);if(!Number.isFinite(fare)||fare<0||tip<0){alert('Enter valid fare and tip amounts.');return}data.active.rides.push({pickup:$('pickup').value.trim(),dropoff:$('dropoff').value.trim(),fare:fare.toFixed(2),tip:tip.toFixed(2),note:$('rideNote').value.trim(),time:new Date().toISOString()});$('rideForm').reset();persist()};
 $('currentRides').addEventListener('click',e=>{const b=e.target.closest('[data-delete-ride]');if(!b||!data.active)return;const i=Number(b.dataset.deleteRide);if(confirm('Delete this ride?')){data.active.rides.splice(i,1);persist()}});
@@ -329,7 +351,7 @@ window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredIns
 $('installBtn').onclick=async()=>{if(!deferredInstall)return;deferredInstall.prompt();await deferredInstall.userChoice;deferredInstall=null;$('installBtn').hidden=true};
 if('serviceWorker'in navigator && location.protocol.startsWith('http'))window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 setupAddressAutocomplete('pickup','pickupSuggestions');setupAddressAutocomplete('dropoff','dropoffSuggestions');
-render();fillSettings();fillManifest();
+render();fillSettings();fillManifest();updateFareEstimate();
 })();
 </script>
 </body></html>
