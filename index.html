@@ -43,6 +43,15 @@ hr{border:0;border-top:1px solid var(--line);margin:14px 0}
 footer{text-align:center;color:var(--muted);font-size:12px;padding:18px}
 @media(min-width:650px){.stats{grid-template-columns:repeat(4,minmax(0,1fr))}}
 .meter-grid{overflow-x:auto;margin-top:12px}.meter-head,.meter-row{display:grid;grid-template-columns:1.05fr 1fr 1fr .75fr;gap:6px;align-items:center;min-width:520px;padding:7px 5px;border-bottom:1px solid var(--line)}.meter-head{font-size:10px;font-weight:800;color:var(--muted)}.meter-row b{font-size:12px}.meter-row input{min-width:0;padding:8px 6px;min-height:40px;font-size:13px}.meter-row output{font-size:12px;font-weight:800;text-align:center;color:#65ff79}
+
+.address-field{position:relative}
+.address-suggestions{display:none;position:absolute;z-index:20;left:0;right:0;top:100%;margin-top:4px;background:#101812;border:1px solid #47734d;border-radius:11px;box-shadow:0 8px 24px #0009;overflow:hidden;max-height:260px;overflow-y:auto}
+.address-suggestions.open{display:block}
+.address-suggestion{display:block;width:100%;text-align:left;border:0;border-radius:0;background:#101812;color:var(--ink);padding:11px 13px;min-height:44px;border-bottom:1px solid #263b29;font:500 14px system-ui}
+.address-suggestion:last-child{border-bottom:0}
+.address-suggestion:active,.address-suggestion:hover{background:#203b25}
+.address-suggestion small{display:block;color:var(--muted);font-size:11px;margin-top:3px;font-weight:400}
+.address-help{margin:8px 0 0}
 </style>
 </head>
 <body>
@@ -92,8 +101,9 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:18px}
  <div class="card">
   <h2>Add a passenger / ride</h2>
   <form id="rideForm">
-   <label for="pickup">Pickup address</label><input id="pickup" required placeholder="Street address or pickup location" autocomplete="street-address">
-   <label for="dropoff">Drop-off address</label><input id="dropoff" required placeholder="Destination address">
+   <div class="address-field"><label for="pickup">Pickup address</label><input id="pickup" required placeholder="Start typing pickup address" autocomplete="off" aria-autocomplete="list" aria-expanded="false"><div class="address-suggestions" id="pickupSuggestions" role="listbox"></div></div>
+   <div class="address-field"><label for="dropoff">Drop-off address</label><input id="dropoff" required placeholder="Start typing destination address" autocomplete="off" aria-autocomplete="list" aria-expanded="false"><div class="address-suggestions" id="dropoffSuggestions" role="listbox"></div></div>
+   <p class="muted address-help">Start typing to see address suggestions around the Outer Banks, Currituck and southeastern Virginia. Internet connection required for suggestions.</p>
    <div class="row">
     <div><label for="fare">Fare ($)</label><input id="fare" type="number" min="0" step="0.01" required inputmode="decimal" placeholder="0.00"></div>
     <div><label for="tip">Tip ($) — optional</label><input id="tip" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00" value="0"></div>
@@ -141,6 +151,53 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:18px}
 (() => {
 const KEY='atlanticTaxiTracker.v1';
 const $=id=>document.getElementById(id);
+const addressSearches={};
+function setupAddressAutocomplete(inputId,listId){
+ const input=$(inputId),list=$(listId);let timer=null,controller=null,activeRequest=0;
+ const close=()=>{list.classList.remove('open');list.innerHTML='';input.setAttribute('aria-expanded','false')};
+ const choose=(label)=>{input.value=label;close();input.dispatchEvent(new Event('change',{bubbles:true}))};
+ input.addEventListener('input',()=>{
+  clearTimeout(timer);if(controller)controller.abort();
+  const q=input.value.trim();if(q.length<3){close();return}
+  timer=setTimeout(async()=>{
+   const request=++activeRequest;controller=new AbortController();
+   try{
+    const url='https://photon.komoot.io/api/?q='+encodeURIComponent(q)+'&lat=36.25&lon=-75.85&limit=7&lang=en';
+    const response=await fetch(url,{signal:controller.signal,headers:{'Accept':'application/json'}});
+    if(!response.ok)throw new Error('Address search unavailable');
+    const result=await response.json();if(request!==activeRequest)return;
+    const features=(result.features||[]).map(f=>{
+     const p=f.properties||{},street=[p.housenumber,p.street||p.name].filter(Boolean).join(' ');
+     const locality=p.city||p.town||p.village||p.hamlet||p.suburb||p.county;
+     const parts=[street,locality,p.state,p.postcode].filter((v,i,a)=>v&&a.indexOf(v)===i);
+     return {label:parts.join(', '),detail:[p.type,p.country].filter(Boolean).join(' • ')};
+    }).filter(x=>x.label);
+    list.innerHTML='';
+    features.forEach(item=>{
+     const b=document.createElement('button');b.type='button';b.className='address-suggestion';b.setAttribute('role','option');
+     b.textContent=item.label;
+     if(item.detail){const small=document.createElement('small');small.textContent=item.detail;b.appendChild(small)}
+     b.addEventListener('click',()=>choose(item.label));list.appendChild(b);
+    });
+    if(features.length){list.classList.add('open');input.setAttribute('aria-expanded','true')}else close();
+   }catch(err){if(err.name!=='AbortError')close()}
+  },350);
+ });
+ input.addEventListener('keydown',e=>{
+  if(e.key==='Escape')close();
+  if(e.key==='ArrowDown'&&list.classList.contains('open')){e.preventDefault();list.querySelector('button')?.focus()}
+ });
+ list.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){close();input.focus()}
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'){
+   e.preventDefault();const items=[...list.querySelectorAll('button')],i=items.indexOf(document.activeElement);
+   items[Math.max(0,Math.min(items.length-1,i+(e.key==='ArrowDown'?1:-1)))]?.focus();
+  }
+ });
+ document.addEventListener('click',e=>{if(!e.target.closest('#'+inputId)&&!e.target.closest('#'+listId))close()});
+ input.addEventListener('blur',()=>setTimeout(()=>{if(!list.contains(document.activeElement))close()},120));
+}
+
 const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(Number(n)||0);
 const dateKey=d=>new Date(d).toISOString().slice(0,10);
 const localDate=d=>{const x=new Date(d);return new Date(x.getTime()-x.getTimezoneOffset()*60000).toISOString().slice(0,10)};
@@ -173,6 +230,7 @@ $('startShift').onclick=()=>{if(data.active)return;data.active={id:crypto.random
 $('saveManifest').onclick=()=>{if(!data.active){alert('Start your shift first, then enter the meter readings.');return}const m={};manifestFields.forEach(k=>m[k]=$(k).value);data.active.manifest=m;persist();alert('Meter readings and vehicle checks saved to this shift.')};
 manifestFields.forEach(k=>{if($(k))$(k).addEventListener('input',updateManifestTotals);if($(k))$(k).addEventListener('change',updateManifestTotals)});
 $('endShift').onclick=()=>{const s=data.active;if(!s)return;const mm={};manifestFields.forEach(k=>mm[k]=$(k).value);s.manifest=mm;if(!confirm('End this shift and save it to your history?'))return;s.ended=new Date().toISOString();data.shifts.push(s);data.active=null;persist();showReport(s)};
+$('rideForm').addEventListener('reset',()=>{document.querySelectorAll('.address-suggestions').forEach(x=>{x.classList.remove('open');x.innerHTML=''})});
 $('rideForm').onsubmit=e=>{e.preventDefault();if(!data.active){alert('Start your shift first.');return}const fare=Number($('fare').value),tip=Number($('tip').value||0);if(!Number.isFinite(fare)||fare<0||tip<0){alert('Enter valid fare and tip amounts.');return}data.active.rides.push({pickup:$('pickup').value.trim(),dropoff:$('dropoff').value.trim(),fare:fare.toFixed(2),tip:tip.toFixed(2),note:$('rideNote').value.trim(),time:new Date().toISOString()});$('rideForm').reset();persist()};
 $('currentRides').addEventListener('click',e=>{const b=e.target.closest('[data-delete-ride]');if(!b||!data.active)return;const i=Number(b.dataset.deleteRide);if(confirm('Delete this ride?')){data.active.rides.splice(i,1);persist()}});
 function showReport(s){
@@ -270,6 +328,7 @@ document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.query
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;$('installBtn').hidden=false});
 $('installBtn').onclick=async()=>{if(!deferredInstall)return;deferredInstall.prompt();await deferredInstall.userChoice;deferredInstall=null;$('installBtn').hidden=true};
 if('serviceWorker'in navigator && location.protocol.startsWith('http'))window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+setupAddressAutocomplete('pickup','pickupSuggestions');setupAddressAutocomplete('dropoff','dropoffSuggestions');
 render();fillSettings();fillManifest();
 })();
 </script>
