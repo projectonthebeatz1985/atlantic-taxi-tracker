@@ -38,7 +38,7 @@ button.danger{background:#301416;color:#ff8585;border:1px solid #693238}
 button:disabled{opacity:.45;cursor:not-allowed}
 .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}
 .actions button{flex:1}
-.ride{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:9px;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.ride{background:rgba(12,27,16,.82);border:1px solid #426b49;border-radius:12px;padding:12px;margin-top:9px;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
 .ride small{display:block;color:var(--muted);margin-top:4px;line-height:1.4}.money{font-weight:800;white-space:nowrap;color:var(--green)}
 .muted{color:#c1d6c4;font-size:13px}.empty{padding:22px;text-align:center;color:var(--muted);background:rgba(17,26,19,.76);border-radius:12px}
 .notice{padding:11px 12px;border-radius:11px;background:#26301a;color:#d7ef9e;font-size:13px;line-height:1.45}
@@ -55,6 +55,14 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:18px}
 .address-suggestion:active,.address-suggestion:hover{background:#203b25}
 .address-suggestion small{display:block;color:var(--muted);font-size:11px;margin-top:3px;font-weight:400}
 .address-help{margin:8px 0 0}
+
+.history-card{background:rgba(5,17,9,.72)!important;color:#f3fff4;border-color:#4a8052;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.history-card b{color:#f2fff3}
+.history-card .muted{color:#c4dfc8}
+.history-card .ride{background:rgba(17,39,22,.78);border-color:#527b59;color:#f3fff4}
+.history-card .ride b{color:#f3fff4}
+.history-card .ride small{color:#c4dfc8}
+.history-card details summary{color:#d8f5dc}
 </style>
 </head>
 <body>
@@ -315,7 +323,7 @@ function renderHistory(){
  const months=['January','February','March','April','May','June','July','August','September','October','November','December'],m=$('historyMonth'),oldm=m.value;
  m.innerHTML='<option value="">All months</option>'+months.map((x,i)=>`<option value="${i}">${x}</option>`).join('');m.value=oldm;
  const filtered=allShifts().filter(s=>(!sel.value||new Date(s.started).getFullYear()===Number(sel.value))&&(!m.value||new Date(s.started).getMonth()===Number(m.value)));
- $('historyList').innerHTML=filtered.length?filtered.map(s=>{const t=totals(s);return `<div class="card" style="margin-top:10px;background:#fbfcfd"><div style="display:flex;justify-content:space-between;gap:10px"><div><b>${localDate(s.started)}</b><div class="muted">${t.count} passengers • ${new Date(s.started).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})} – ${s.ended?new Date(s.ended).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}):'Active'}</div></div><b class="money">${money(t.fare+t.tips)}</b></div><div class="actions"><button class="secondary" data-report="${s.id}">Share report</button><button class="secondary" data-pdf="${s.id}">PDF</button><button class="danger" data-delete-shift="${s.id}">Delete shift</button></div><details><summary class="muted">View rides</summary>${s.rides.map(r=>rideHtml(r,0,false)).join('')||'<p class="muted">No rides recorded.</p>'}</details></div>`}).join(''):'<div class="empty">No shifts found for this filter.</div>';
+ $('historyList').innerHTML=filtered.length?filtered.map(s=>{const t=totals(s);return `<div class="card history-card" style="margin-top:10px"><div style="display:flex;justify-content:space-between;gap:10px"><div><b>${localDate(s.started)}</b><div class="muted">${t.count} passengers • ${new Date(s.started).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})} – ${s.ended?new Date(s.ended).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}):'Active'}</div></div><b class="money">${money(t.fare+t.tips)}</b></div><div class="actions"><button class="secondary" data-report="${s.id}">Share report</button><button class="secondary" data-pdf="${s.id}">PDF</button><button class="danger" data-delete-shift="${s.id}">Delete shift</button></div><details><summary class="muted">View rides</summary>${s.rides.map(r=>rideHtml(r,0,false)).join('')||'<p class="muted">No rides recorded.</p>'}</details></div>`}).join(''):'<div class="empty">No shifts found for this filter.</div>';
 }
 $('historyYear').onchange=renderHistory;$('historyMonth').onchange=renderHistory;
 $('historyList').addEventListener('click',e=>{
