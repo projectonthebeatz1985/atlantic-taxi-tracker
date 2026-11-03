@@ -51,3 +51,5 @@ The shift history includes a Delete shift action. It asks for confirmation befor
 
 ## Atlantic Cab green branding update
 The app now uses the supplied green Atlantic Cab logo, a black and emerald-green interface, a matching Android launcher icon, and green/black PDF report header. Upload all updated files including atlantic-cab-logo.png and icon-512.png to the GitHub Pages repository root. The service worker cache version was updated so phones fetch the new design.
+
+Version 10 adds a darkened Atlantic Cab background image and higher-contrast panels, buttons, navigation and form fields for readability.

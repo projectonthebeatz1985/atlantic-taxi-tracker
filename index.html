@@ -11,33 +11,36 @@
 <title>Atlantic Taxi Tracker</title>
 <style>
 :root{--navy:#071008;--blue:#102b13;--gold:#39f05a;--bg:#080d09;--ink:#e8f5e9;--muted:#9ab09c;--line:#263b29;--green:#39f05a;--red:#ff6262}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-header{background:linear-gradient(135deg,#020402,#102713 70%,#061008);color:white;padding:20px 16px 16px;position:sticky;top:0;z-index:3;box-shadow:0 3px 12px #092b3b22}
+*{box-sizing:border-box}
+body{margin:0;background:#050805;color:#f3fff4;font:16px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;position:relative;isolation:isolate}
+/* Full-page Atlantic Cab artwork, darkened so every screen remains readable. */
+body::before{content:"";position:fixed;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(2,7,3,.48),rgba(2,7,3,.76) 38%,rgba(2,7,3,.88)),url("atlantic-cab-background.webp") center 18%/cover no-repeat;transform:translateZ(0)}
+header{background:rgba(3,10,5,.94);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);color:white;padding:20px 16px 16px;position:sticky;top:0;z-index:3;box-shadow:0 3px 18px #0009;border-bottom:1px solid #39f05a55}
 .head{max-width:850px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:12px}
 .brand{display:flex;align-items:center;gap:12px;min-width:0}.brand img{width:min(46vw,220px);height:auto;max-height:66px;object-fit:contain;display:block}.brand h1{font-size:13px;margin:2px 0 0;color:#d9f7dc;letter-spacing:.04em}.brand small{color:#9ccea3;font-size:11px}
 main{max-width:850px;margin:0 auto;padding:16px 14px 100px}
 nav{display:flex;gap:7px;overflow:auto;padding:12px 0 3px;max-width:850px;margin:auto}
-nav button{white-space:nowrap;border:1px solid #39f05a55;background:#ffffff08;color:#e9ffeb;border-radius:20px;padding:8px 13px;font-weight:650}
-nav button.active{background:#39f05a;color:#041006;border-color:#39f05a}
+nav button{white-space:nowrap;border:1px solid #56d96b99;background:#101d13;color:#f2fff3;border-radius:20px;padding:9px 14px;font-weight:750;text-shadow:0 1px 2px #000}
+nav button.active{background:#39f05a;color:#031006;border-color:#8aff98;text-shadow:none;box-shadow:0 0 14px #39f05a55}
 .panel{display:none}.panel.active{display:block}
-.card{background:#101812;border:1px solid var(--line);border-radius:17px;padding:16px;margin:0 0 13px;box-shadow:0 2px 8px #102d3a08}
+.card{background:rgba(7,16,10,.96);border:1px solid #315c38;border-radius:17px;padding:16px;margin:0 0 13px;box-shadow:0 8px 26px #0008;backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px)}
 h2{font-size:19px;margin:0 0 13px}h3{font-size:15px;margin:0 0 8px}
 .stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.stat{background:#17251a;border:1px solid #29432d;border-radius:13px;padding:13px}.stat strong{display:block;font-size:25px;color:#65ff79;font-variant-numeric:tabular-nums}.stat span{font-size:12px;color:var(--muted)}
+.stat{background:rgba(19,39,24,.98);border:1px solid #3b6943;border-radius:13px;padding:13px;box-shadow:inset 0 1px 0 #ffffff0d}.stat strong{display:block;font-size:25px;color:#65ff79;font-variant-numeric:tabular-nums}.stat span{font-size:12px;color:var(--muted)}
 label{display:block;font-size:13px;font-weight:700;margin:12px 0 5px}
-input,textarea,select{width:100%;border:1px solid #36523a;border-radius:10px;padding:12px;font:inherit;background:#080e09;color:var(--ink);min-height:46px}
+input,textarea,select{width:100%;border:1px solid #527b59;border-radius:10px;padding:12px;font:inherit;background:#050b06;color:#fff;min-height:46px;box-shadow:inset 0 1px 4px #0008}input::placeholder,textarea::placeholder{color:#b4c7b7;opacity:1}
 textarea{min-height:75px;resize:vertical}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-button,.btn{border:0;border-radius:11px;padding:12px 15px;background:#1d9c35;color:white;font:700 14px system-ui;cursor:pointer;min-height:44px}
-button.secondary,.btn.secondary{background:#1b2a1e;color:#dfffe2;border:1px solid #36523a}
-button.gold{background:#39f05a;color:#041006}
+button,.btn{border:1px solid #43d85b;border-radius:11px;padding:12px 15px;background:#168b2d;color:#fff;font:800 14px system-ui;cursor:pointer;min-height:46px;text-shadow:0 1px 2px #0005;box-shadow:0 3px 10px #0005}
+button.secondary,.btn.secondary{background:#243b29;color:#f1fff2;border:1px solid #5c8b64;text-shadow:0 1px 2px #000}
+button.gold{background:#39f05a;color:#041006;border-color:#8aff98;text-shadow:none}
 button.danger{background:#301416;color:#ff8585;border:1px solid #693238}
 button:disabled{opacity:.45;cursor:not-allowed}
 .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}
 .actions button{flex:1}
 .ride{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:9px;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
 .ride small{display:block;color:var(--muted);margin-top:4px;line-height:1.4}.money{font-weight:800;white-space:nowrap;color:var(--green)}
-.muted{color:var(--muted);font-size:13px}.empty{padding:22px;text-align:center;color:var(--muted);background:#111a13;border-radius:12px}
+.muted{color:#c1d6c4;font-size:13px}.empty{padding:22px;text-align:center;color:var(--muted);background:#111a13;border-radius:12px}
 .notice{padding:11px 12px;border-radius:11px;background:#26301a;color:#d7ef9e;font-size:13px;line-height:1.45}
 hr{border:0;border-top:1px solid var(--line);margin:14px 0}
 footer{text-align:center;color:var(--muted);font-size:12px;padding:18px}
@@ -45,9 +48,9 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:18px}
 .meter-grid{overflow-x:auto;margin-top:12px}.meter-head,.meter-row{display:grid;grid-template-columns:1.05fr 1fr 1fr .75fr;gap:6px;align-items:center;min-width:520px;padding:7px 5px;border-bottom:1px solid var(--line)}.meter-head{font-size:10px;font-weight:800;color:var(--muted)}.meter-row b{font-size:12px}.meter-row input{min-width:0;padding:8px 6px;min-height:40px;font-size:13px}.meter-row output{font-size:12px;font-weight:800;text-align:center;color:#65ff79}
 
 .address-field{position:relative}
-.address-suggestions{display:none;position:absolute;z-index:20;left:0;right:0;top:100%;margin-top:4px;background:#101812;border:1px solid #47734d;border-radius:11px;box-shadow:0 8px 24px #0009;overflow:hidden;max-height:260px;overflow-y:auto}
+.address-suggestions{display:none;position:absolute;z-index:20;left:0;right:0;top:100%;margin-top:4px;background:#08130b;border:1px solid #47734d;border-radius:11px;box-shadow:0 8px 24px #0009;overflow:hidden;max-height:260px;overflow-y:auto}
 .address-suggestions.open{display:block}
-.address-suggestion{display:block;width:100%;text-align:left;border:0;border-radius:0;background:#101812;color:var(--ink);padding:11px 13px;min-height:44px;border-bottom:1px solid #263b29;font:500 14px system-ui}
+.address-suggestion{display:block;width:100%;text-align:left;border:0;border-radius:0;background:#08130b;color:#f3fff4;padding:11px 13px;min-height:44px;border-bottom:1px solid #263b29;font:500 14px system-ui}
 .address-suggestion:last-child{border-bottom:0}
 .address-suggestion:active,.address-suggestion:hover{background:#203b25}
 .address-suggestion small{display:block;color:var(--muted);font-size:11px;margin-top:3px;font-weight:400}

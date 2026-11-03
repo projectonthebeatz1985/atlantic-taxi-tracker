@@ -1,5 +1,5 @@
-const CACHE='atlantic-taxi-v4-fare-estimator';
-const CORE=['./','./index.html','./manifest.webmanifest','./icon.svg','./icon-512.png','./atlantic-cab-logo.png'];
+const CACHE='atlantic-taxi-v5-atlantic-background';
+const CORE=['./','./index.html','./manifest.webmanifest','./icon.svg','./icon-512.png','./atlantic-cab-logo.png','./atlantic-cab-background.webp'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',e=>{
