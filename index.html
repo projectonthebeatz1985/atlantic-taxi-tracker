@@ -277,19 +277,131 @@ async function shareText(text,s){
  const sms='sms:'+phone+(phone?'?':'?')+'body='+encodeURIComponent(text);location.href=sms;
 }
 function makePdf(s){
- if(!window.jspdf){alert('PDF tool did not load. Please connect to the internet once, then try again, or use Share text.');return}
- const {jsPDF}=window.jspdf,doc=new jsPDF(),t=totals(s);let y=18;
- doc.setFillColor(5,18,7);doc.rect(0,0,210,34,'F');doc.setTextColor(72,245,96);doc.setFontSize(18);doc.text('ATLANTIC CAB',14,17);doc.setFontSize(10);doc.text('DRIVERS MANIFEST / SHIFT REPORT',14,25);
- doc.setTextColor(25,45,55);doc.setFontSize(11);y=46;
- const lines=[`Driver: ${data.settings.driver||'Not specified'}`,`Date: ${localDate(s.started)}`,`Started: ${new Date(s.started).toLocaleString()}`,`Ended: ${s.ended?new Date(s.ended).toLocaleString():'—'}`,`Passengers / trips: ${t.count}`,`TOTAL FARES: ${money(t.fare)}`,`TOTAL VOUCHERS (100% TO DRIVER): ${money(t.voucher)}`,`DRIVER: 50% non-voucher fare (${money((t.fare-t.voucher)*0.5)}) + vouchers (${money(t.voucher)}) = ${money((t.fare-t.voucher)*0.5+t.voucher)}`,`COMPANY: 50% non-voucher fare (${money((t.fare-t.voucher)*0.5)}) + $9 cab lease = ${money((t.fare-t.voucher)*0.5+9)}`];
- lines.forEach((line,i)=>{doc.setFont(undefined,i===7?'bold':'normal');doc.text(line,14,y);y+=7});
- y+=5;const mm=manifestFor(s);doc.setFont(undefined,'bold');doc.text('METER READINGS',14,y);y+=7;doc.setFont(undefined,'normal');
- const mrows=[['ITEM','BEGINNING','ENDING','TOTAL'],...[['ODOMETER','odometer'],['CASH','cash'],['EXTRAS','extras'],['METER MILES','meterMiles'],['PAID MILES','paidMiles'],['TRIPS','trips']].map(([label,key])=>{const a=mm[key+'Start']??'',b=mm[key+'End']??'',v=manifestDiff(mm,key+'Start',key+'End');return [label,a||'—',b||'—',v===null?'—':String(v)]})];
- mrows.forEach((row,i)=>{if(y>275){doc.addPage();y=18}doc.setFont(undefined,i===0?'bold':'normal');doc.text(row.map(String).join('    |    '),14,y);y+=6});
- doc.setFont(undefined,'normal');doc.text(`CHECK OIL: ${mm.checkOil||'—'}     CHECK TRANS: ${mm.checkTrans||'—'}     CAB #: ${mm.cabNumber||'—'}     SHIFT: ${mm.shiftType||'—'}`,14,y);y+=9;
- y+=5;doc.setFont(undefined,'bold');doc.text('RIDE DETAILS',14,y);y+=8;doc.setFont(undefined,'normal');
- s.rides.forEach((r,i)=>{const content=doc.splitTextToSize(`${i+1}. ${r.pickup} to ${r.dropoff} | Fare ${money(r.fare)}${r.note?' | '+r.note:''}`,180);if(y+content.length*6>280){doc.addPage();y=18}doc.text(content,14,y);y+=content.length*6+3});
- doc.save(`Atlantic-Taxi-Shift-${localDate(s.started)}.pdf`);
+ if(!window.jspdf){alert('PDF tool did not load. Connect to the internet once, then try again.');return}
+ const {jsPDF}=window.jspdf,doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+ const t=totals(s),mm=manifestFor(s),W=210,H=297,L=10,R=200;
+ const ink=[27,39,59],line=[58,70,91],pale=[232,237,245],gold=[190,151,65];
+ const fmtDate=localDate(s.started),driver=data.settings.driver||'________________________';
+ const cab=mm.cabNumber||'________',shift=(mm.shiftType||'D').toUpperCase();
+ const fmtTime=v=>v?new Date(v).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}):'—';
+ const regularFare=Math.max(0,t.fare-t.voucher),driverPay=regularFare*.5+t.voucher;
+ const companyPay=regularFare*.5+9;
+ let y=10, page=1;
+ function text(str,x,yy,size=7,bold=false,align='left'){
+  doc.setFont('helvetica',bold?'bold':'normal');doc.setFontSize(size);doc.setTextColor(...ink);
+  doc.text(String(str??''),x,yy,{align});
+ }
+ function rect(x,yy,w,h,fill=null){
+  if(fill){doc.setFillColor(...fill);doc.rect(x,yy,w,h,'F')}
+  doc.setDrawColor(...line);doc.setLineWidth(.25);doc.rect(x,yy,w,h);
+ }
+ function lineH(x1,yy,x2){doc.setDrawColor(...line);doc.setLineWidth(.2);doc.line(x1,yy,x2,yy)}
+ function pageTop(continuation=false){
+  if(!continuation){
+   text(data.settings.company||'Atlantic Cab',105,y+8,18,true,'center');
+   text("DRIVER'S MANIFEST & EARNINGS REPORT",105,y+14,9,true,'center');
+   y+=20;
+   rect(L,y,190,17,pale);
+   text('DRIVER: '+driver,13,y+5,7,true);
+   text('CAB #: '+cab,113,y+5,7,true);
+   text('SHIFT: '+(shift==='N'?'NIGHT':'DAY'),160,y+5,7,true);
+   text('DATE: '+fmtDate,13,y+12,7,true);
+   text('DAY: '+new Date(s.started).toLocaleDateString('en-US',{weekday:'long'}),75,y+12,7,true);
+   text('START: '+fmtTime(s.started)+'   END: '+fmtTime(s.ended),132,y+12,6.5,true);
+   y+=21;
+   // Meter readings block
+   const cols=[L,L+48,L+96,L+144,L+190],rh=7;
+   ['METER','BEGINNING','ENDING','TOTAL'].forEach((v,i)=>{});
+   rect(L,y,190,rh,pale);
+   const mh=['METER','BEGINNING','ENDING','TOTAL'];
+   const mx=[L+3,L+51,L+99,L+147];
+   mh.forEach((v,i)=>text(v,mx[i],y+4.8,7,true));
+   y+=rh;
+   const items=[['ODOMETER','odometer'],['CASH','cash'],['EXTRAS','extras'],['METER MILES','meterMiles'],['PAID MILES','paidMiles'],['TRIPS','trips']];
+   items.forEach(([label,key])=>{
+    const a=mm[key+'Start']??'',b=mm[key+'End']??'',v=manifestDiff(mm,key+'Start',key+'End');
+    const h=6.2;rect(L,y,190,h);
+    [L+48,L+96,L+144].forEach(x=>doc.line(x,y,x,y+h));
+    text(label,L+3,y+4.2,6.5,true);
+    text(a===''?'—':a,L+51,y+4.2,6.5);
+    text(b===''?'—':b,L+99,y+4.2,6.5);
+    text(v===null?'—':(key==='cash'||key==='extras'?money(v):String(v)),L+147,y+4.2,6.5);
+    y+=h;
+   });
+   text('CHECK OIL: '+(mm.checkOil||'—')+'     CHECK TRANS: '+(mm.checkTrans||'—'),L+2,y+5,6.5,true);
+   y+=9;
+  }else{
+   text((data.settings.company||'Atlantic Cab')+' — DRIVER MANIFEST (CONTINUED)',105,12,10,true,'center');
+   text('Driver: '+driver+'     Date: '+fmtDate+'     Cab #: '+cab,105,18,7,false,'center');
+   y=23;
+  }
+  // Ride table headings
+  const xs=[L,L+19,L+65,L+145,L+169,L+190];
+  const hh=9;rect(L,y,190,hh,pale);
+  xs.slice(1,-1).forEach(x=>doc.line(x,y,x,y+hh));
+  text('P/U TIME',L+9.5,y+5.8,6.2,true,'center');
+  text('P/U LOCATION',L+21,y+5.8,6.2,true);
+  text('STOPS / FINAL DESTINATION',L+67,y+5.8,6.2,true);
+  text('FARE $',L+157,y+5.8,6.2,true,'center');
+  text('VOUCHER $',L+179.5,y+5.8,6.2,true,'center');
+  y+=hh;
+ }
+ function drawRide(r,i){
+  const pickup=doc.splitTextToSize(String(r.pickup||''),42);
+  const route=[...(r.stops||[]).filter(Boolean).map((v,n)=>'Stop '+(n+1)+': '+v),'Final: '+(r.dropoff||'')].join('\n');
+  const routeLines=doc.splitTextToSize(route,75);
+  const note=r.note?doc.splitTextToSize('Note: '+r.note,75):[];
+  const lines=routeLines.concat(note);
+  const n=Math.max(pickup.length,lines.length,1);
+  const h=Math.max(9,4+n*3.1);
+  if(y+h>H-34){doc.addPage();page++;y=8;pageTop(true)}
+  rect(L,y,190,h);
+  [L+19,L+65,L+145,L+169].forEach(x=>doc.line(x,y,x,y+h));
+  text(fmtTime(r.time),L+9.5,y+5.5,6.1,false,'center');
+  pickup.forEach((v,j)=>text(v,L+21,y+4.2+j*3.1,6.1));
+  lines.forEach((v,j)=>text(v,L+67,y+4.2+j*3.1,6.1));
+  text(money(r.fare),L+157,y+5.5,6.1,false,'center');
+  text(money(r.voucher||0),L+179.5,y+5.5,6.1,false,'center');
+  y+=h;
+ }
+ pageTop(false);
+ (s.rides||[]).forEach(drawRide);
+ // Settlement summary, moved to a fresh page if needed
+ if(y+42>H-12){doc.addPage();page++;y=10;text((data.settings.company||'Atlantic Cab')+' — SHIFT TOTALS',105,y+5,10,true,'center');y+=12}
+ y+=3;
+ rect(L,y,190,7,pale);
+ text('SHIFT EARNINGS SUMMARY',L+3,y+4.8,7,true);
+ text('AMOUNT',L+187,y+4.8,7,true,'right');
+ y+=7;
+ const sums=[
+  ['Total metered fares',money(t.fare)],
+  ['Total vouchers (100% to driver)',money(t.voucher)],
+  ['Driver share: 50% of non-voucher fares',money(regularFare*.5)],
+  ['Plus: 100% of vouchers',money(t.voucher)],
+  ['Cab lease fee ($9.00)', '($9.00)'],
+  ['FINAL DRIVER PAY',money(driverPay)],
+  ['Company share incl. lease',money(companyPay)]
+ ];
+ sums.forEach(([label,val],i)=>{
+  rect(L,y,190,6.2,i===5?[255,245,220]:null);
+  text(label,L+3,y+4.3,6.5,i===5);
+  text(val,L+187,y+4.3,6.5,true,'right');
+  y+=6.2;
+ });
+ y+=4;
+ text('Trips recorded: '+t.count+'     Shift started: '+fmtTime(s.started)+'     Shift ended: '+fmtTime(s.ended),L+1,y+3,6.2);
+ y+=8;
+ text('Driver signature: ____________________________________',L+1,y+3,6.3);
+ text('Manager / dispatcher: ______________________________',105,y+3,6.3);
+ y+=8;
+ doc.setFontSize(5.8);doc.setTextColor(85,95,110);
+ doc.text('Voucher payments go 100% to the driver; only the remaining fare is split 50/50. Lease fee shown is the $9.00 setting used by this app.',L,H-5);
+ // Consistent thin gold border on every page
+ for(let p=1;p<=doc.getNumberOfPages();p++){
+  doc.setPage(p);doc.setDrawColor(...gold);doc.setLineWidth(.7);doc.rect(5,5,200,287);
+  doc.setFontSize(5.5);doc.setTextColor(100,110,125);doc.text('ATLANTIC CAB • DRIVER COPY',200,294,{align:'right'});
+ }
+ doc.save('Atlantic-Cab-Manifest-'+fmtDate+'.pdf');
 }
 function renderHistory(){
  const years=[...new Set(allShifts().map(s=>new Date(s.started).getFullYear()))].sort((a,b)=>b-a),sel=$('historyYear'),old=sel.value;
