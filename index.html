@@ -47,14 +47,6 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:18px}
 @media(min-width:650px){.stats{grid-template-columns:repeat(4,minmax(0,1fr))}}
 .meter-grid{overflow-x:auto;margin-top:12px}.meter-head,.meter-row{display:grid;grid-template-columns:1.05fr 1fr 1fr .75fr;gap:6px;align-items:center;min-width:520px;padding:7px 5px;border-bottom:1px solid var(--line)}.meter-head{font-size:10px;font-weight:800;color:var(--muted)}.meter-row b{font-size:12px}.meter-row input{min-width:0;padding:8px 6px;min-height:40px;font-size:13px}.meter-row output{font-size:12px;font-weight:800;text-align:center;color:#65ff79}
 
-.address-field{position:relative}
-.address-suggestions{display:none;position:absolute;z-index:20;left:0;right:0;top:100%;margin-top:4px;background:#08130b;border:1px solid #47734d;border-radius:11px;box-shadow:0 8px 24px #0009;overflow:hidden;max-height:260px;overflow-y:auto}
-.address-suggestions.open{display:block}
-.address-suggestion{display:block;width:100%;text-align:left;border:0;border-radius:0;background:#08130b;color:#f3fff4;padding:11px 13px;min-height:44px;border-bottom:1px solid #263b29;font:500 14px system-ui}
-.address-suggestion:last-child{border-bottom:0}
-.address-suggestion:active,.address-suggestion:hover{background:#203b25}
-.address-suggestion small{display:block;color:var(--muted);font-size:11px;margin-top:3px;font-weight:400}
-.address-help{margin:8px 0 0}
 
 .history-card{background:rgba(5,17,9,.72)!important;color:#f3fff4;border-color:#4a8052;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
 .history-card b{color:#f2fff3}
@@ -86,11 +78,11 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:18px}
    <div class="stat"><strong id="todayTotal">$0.00</strong><span>Shift earnings</span></div>
    <div class="stat"><strong id="rideCount">0</strong><span>Passengers</span></div>
    <div class="stat"><strong id="avgFare">$0.00</strong><span>Average fare</span></div>
-   <div class="stat"><strong id="tipTotal">$0.00</strong><span>Tips recorded</span></div>
-   <div class="stat"><strong id="driverShare">$0.00</strong><span>Your pay (50% meter + tips)</span></div>
+   
+   <div class="stat"><strong id="driverShare">$0.00</strong><span>Your pay (50% regular fare + vouchers)</span></div>
    <div class="stat"><strong id="companyShare">$0.00</strong><span>Company share (50% meter + $9 lease)</span></div>
   </div>
-  <p class="muted">Pay split: you receive 50% of metered fares plus 100% of tips. The company receives the other 50% of metered fares plus the $9 cab lease per shift. Tips are never split.</p>
+  <p class="muted">Pay split: you receive 50% of non-voucher fares plus 100% of voucher payments. The company receives the other 50% of non-voucher fares plus the $9 cab lease per shift. </p>
   <div class="actions"><button id="startShift" class="gold">Start shift</button><button id="endShift" class="secondary" disabled>End shift & report</button></div>
  </div>
  <div class="card" id="meterManifestCard">
@@ -122,17 +114,18 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:18px}
  <div class="card">
   <h2>Add a passenger / ride</h2>
   <form id="rideForm">
-   <div class="address-field"><label for="pickup">Pickup address</label><input id="pickup" required placeholder="Start typing pickup address" autocomplete="off" aria-autocomplete="list" aria-expanded="false"><div class="address-suggestions" id="pickupSuggestions" role="listbox"></div></div>
-   <div class="address-field"><label for="dropoff">Drop-off address</label><input id="dropoff" required placeholder="Start typing destination address" autocomplete="off" aria-autocomplete="list" aria-expanded="false"><div class="address-suggestions" id="dropoffSuggestions" role="listbox"></div></div>
-   <p class="muted address-help">Start typing to see address suggestions around the Outer Banks, Currituck and southeastern Virginia. Internet connection required for suggestions.</p>
+   <label for="pickup">Pickup address</label><input id="pickup" required placeholder="Enter pickup address" autocomplete="off">
+   <label for="stops">Additional stops — optional (one address per line)</label><textarea id="stops" rows="2" placeholder="Stop 1&#10;Stop 2&#10;Stop 3"></textarea>
+   <label for="dropoff">Final destination</label><input id="dropoff" required placeholder="Enter final destination" autocomplete="off">
    <div class="row">
-    <div><label for="fare">Fare ($)</label><input id="fare" type="number" min="0" step="0.01" required inputmode="decimal" placeholder="0.00"></div>
-    <div><label for="tip">Tip ($) — optional</label><input id="tip" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00" value="0"></div>
+    <div><label for="fare">Total fare ($)</label><input id="fare" type="number" min="0" step="0.01" required inputmode="decimal" placeholder="0.00"></div>
    </div>
+   <label for="voucher">Voucher paid to driver ($) — optional</label><input id="voucher" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00" value="0">
+   <p class="muted">Voucher payments go 100% to the driver. Only the remaining fare is split 50/50.</p>
    <label for="rideNote">Notes — optional</label><input id="rideNote" placeholder="Extra details, if needed">
    <div class="actions"><button type="submit" id="saveRide">Save ride</button><button type="reset" class="secondary">Clear</button></div>
   </form>
-  <p class="muted">A ride can only be added while a shift is active. Fare and tip are kept separately in the report.</p>
+  <p class="muted">A ride can only be added while a shift is active. Voucher payments are paid 100% to the driver.</p>
  </div>
  <div class="card"><h2>Rides this shift</h2><div id="currentRides" class="empty">Start a shift to begin recording rides.</div></div>
 </section>
@@ -157,7 +150,11 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:18px}
   <label for="bossName">Boss / company name — optional</label><input id="bossName" placeholder="Company or boss name">
   <label for="bossPhone">Boss phone number — optional</label><input id="bossPhone" type="tel" placeholder="For SMS sharing, e.g. +1 252 555 0123">
   <label for="driverName">Your name — optional</label><input id="driverName" placeholder="Driver name">
-  <button id="saveSettings">Save details</button>
+  <hr><h3>Meter & fare rates</h3>
+  <div class="row"><div><label for="meterStartRate">Starting meter fare ($)</label><input id="meterStartRate" type="number" min="0" step="0.01" value="3.50"></div>
+  <div><label for="meterMileRate">Price per mile ($)</label><input id="meterMileRate" type="number" min="0" step="0.01" value="2.90"></div></div>
+  <p class="muted">These rates control the fare estimate calculator.</p>
+  <button id="saveSettings">Save details & rates</button>
  </div>
  <div class="card"><h2>Backup & data</h2><p class="muted">Your records are stored on this device in this browser. Export a backup regularly, especially before changing phones or clearing browser data.</p>
   <div class="actions"><button id="exportJson">Export full backup</button><button id="importJson" class="secondary">Import backup</button><input type="file" id="backupFile" accept="application/json" hidden></div>
@@ -172,53 +169,6 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:18px}
 (() => {
 const KEY='atlanticTaxiTracker.v1';
 const $=id=>document.getElementById(id);
-const addressSearches={};
-function setupAddressAutocomplete(inputId,listId){
- const input=$(inputId),list=$(listId);let timer=null,controller=null,activeRequest=0;
- const close=()=>{list.classList.remove('open');list.innerHTML='';input.setAttribute('aria-expanded','false')};
- const choose=(label)=>{input.value=label;close();input.dispatchEvent(new Event('change',{bubbles:true}))};
- input.addEventListener('input',()=>{
-  clearTimeout(timer);if(controller)controller.abort();
-  const q=input.value.trim();if(q.length<3){close();return}
-  timer=setTimeout(async()=>{
-   const request=++activeRequest;controller=new AbortController();
-   try{
-    const url='https://photon.komoot.io/api/?q='+encodeURIComponent(q)+'&lat=36.25&lon=-75.85&limit=7&lang=en';
-    const response=await fetch(url,{signal:controller.signal,headers:{'Accept':'application/json'}});
-    if(!response.ok)throw new Error('Address search unavailable');
-    const result=await response.json();if(request!==activeRequest)return;
-    const features=(result.features||[]).map(f=>{
-     const p=f.properties||{},street=[p.housenumber,p.street||p.name].filter(Boolean).join(' ');
-     const locality=p.city||p.town||p.village||p.hamlet||p.suburb||p.county;
-     const parts=[street,locality,p.state,p.postcode].filter((v,i,a)=>v&&a.indexOf(v)===i);
-     return {label:parts.join(', '),detail:[p.type,p.country].filter(Boolean).join(' • ')};
-    }).filter(x=>x.label);
-    list.innerHTML='';
-    features.forEach(item=>{
-     const b=document.createElement('button');b.type='button';b.className='address-suggestion';b.setAttribute('role','option');
-     b.textContent=item.label;
-     if(item.detail){const small=document.createElement('small');small.textContent=item.detail;b.appendChild(small)}
-     b.addEventListener('click',()=>choose(item.label));list.appendChild(b);
-    });
-    if(features.length){list.classList.add('open');input.setAttribute('aria-expanded','true')}else close();
-   }catch(err){if(err.name!=='AbortError')close()}
-  },350);
- });
- input.addEventListener('keydown',e=>{
-  if(e.key==='Escape')close();
-  if(e.key==='ArrowDown'&&list.classList.contains('open')){e.preventDefault();list.querySelector('button')?.focus()}
- });
- list.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){close();input.focus()}
-  if(e.key==='ArrowDown'||e.key==='ArrowUp'){
-   e.preventDefault();const items=[...list.querySelectorAll('button')],i=items.indexOf(document.activeElement);
-   items[Math.max(0,Math.min(items.length-1,i+(e.key==='ArrowDown'?1:-1)))]?.focus();
-  }
- });
- document.addEventListener('click',e=>{if(!e.target.closest('#'+inputId)&&!e.target.closest('#'+listId))close()});
- input.addEventListener('blur',()=>setTimeout(()=>{if(!list.contains(document.activeElement))close()},120));
-}
-
 const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(Number(n)||0);
 const dateKey=d=>new Date(d).toISOString().slice(0,10);
 const localDate=d=>{const x=new Date(d);return new Date(x.getTime()-x.getTimezoneOffset()*60000).toISOString().slice(0,10)};
@@ -228,7 +178,7 @@ function load(){try{return JSON.parse(localStorage.getItem(KEY))||{shifts:[],act
 function persist(){localStorage.setItem(KEY,JSON.stringify(data));render()}
 function allShifts(){return [...data.shifts,...(data.active?[data.active]:[])].sort((a,b)=>b.started.localeCompare(a.started))}
 function totals(s){
- return (s.rides||[]).reduce((a,r)=>({fare:a.fare+Number(r.fare),tips:a.tips+Number(r.tip||0),count:a.count+1}),{fare:0,tips:0,count:0});
+ return (s.rides||[]).reduce((a,r)=>({fare:a.fare+Number(r.fare),voucher:a.voucher+Number(r.voucher||0),count:a.count+1}),{fare:0,voucher:0,count:0});
 }
 const manifestFields=['cabNumber','shiftType','odometerStart','odometerEnd','cashStart','cashEnd','extrasStart','extrasEnd','meterMilesStart','meterMilesEnd','paidMilesStart','paidMilesEnd','tripsStart','tripsEnd','checkOil','checkTrans'];
 function manifestFor(s){return s.manifest||{}}
@@ -237,42 +187,66 @@ function fillManifest(){const m=manifestFor(data.active||{});manifestFields.forE
 function updateManifestTotals(){const m={};manifestFields.forEach(k=>{if($(k))m[k]=$(k).value});[['odometer','odometerStart','odometerEnd'],['cash','cashStart','cashEnd'],['extras','extrasStart','extrasEnd'],['meterMiles','meterMilesStart','meterMilesEnd'],['paidMiles','paidMilesStart','paidMilesEnd'],['trips','tripsStart','tripsEnd']].forEach(([name,a,b])=>{const v=manifestDiff(m,a,b);const out=$(name+'Total');if(out)out.textContent=v===null?'—':(name==='cash'||name==='extras'?money(v):String(v))})}
 function activeShift(){return data.active}
 function render(){
- const s=activeShift(), t=s?totals(s):{fare:0,tips:0,count:0};
- $('todayTotal').textContent=money(t.fare+t.tips);$('rideCount').textContent=t.count;$('avgFare').textContent=money(t.count?(t.fare+t.tips)/t.count:0);$('tipTotal').textContent=money(t.tips);
- $('driverShare').textContent=money(t.fare*0.5+t.tips);$('companyShare').textContent=money(t.fare*0.5+9);
+ const s=activeShift(), t=s?totals(s):{fare:0,voucher:0,count:0};
+ $('todayTotal').textContent=money(t.fare);$('rideCount').textContent=t.count;$('avgFare').textContent=money(t.count?t.fare/t.count:0);
+ $('driverShare').textContent=money((t.fare-t.voucher)*0.5+t.voucher);$('companyShare').textContent=money((t.fare-t.voucher)*0.5+9);
  $('shiftStatus').textContent=s?'Started '+new Date(s.started).toLocaleString():'No active shift';
  $('startShift').disabled=!!s;$('endShift').disabled=!s;$('saveRide').disabled=!s;
  $('currentRides').className=s&&s.rides.length?'':'empty';
  $('currentRides').innerHTML=s&&s.rides.length?s.rides.map((r,i)=>rideHtml(r,i,true)).join(''):'Start a shift to begin recording rides.';
  renderHistory();renderYear();
 }
-function rideHtml(r,i,canDelete){return `<div class="ride"><div><b>${esc(r.pickup)}</b><small>To: ${esc(r.dropoff)}<br>${new Date(r.time).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}${r.note?' • '+esc(r.note):''}${Number(r.tip)?'<br>Tip: '+money(r.tip):''}</small></div><div style="text-align:right"><div class="money">${money(Number(r.fare)+Number(r.tip||0))}</div>${canDelete?`<button class="danger" style="padding:6px 9px;min-height:32px;margin-top:7px" data-delete-ride="${i}">Delete</button>`:''}</div></div>`}
+function rideHtml(r,i,canDelete){
+ const via=(r.stops||[]).filter(Boolean);
+ return `<div class="ride"><div><b>${esc(r.pickup)}</b><small>${via.length?'<br>Stops: '+via.map(esc).join(' → '):''}<br>Final destination: ${esc(r.dropoff)}<br>${new Date(r.time).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}${r.note?' • '+esc(r.note):''}${Number(r.voucher)?'<br>Voucher to driver: '+money(r.voucher):''}</small></div><div style="text-align:right"><div class="money">${money(Number(r.fare))}</div>${canDelete?`<div class="actions" style="justify-content:flex-end"><button class="secondary" style="padding:6px 9px;min-height:32px;margin-top:7px" data-edit-ride="${i}">Edit</button><button class="danger" style="padding:6px 9px;min-height:32px;margin-top:7px" data-delete-ride="${i}">Delete</button></div>`:''}</div></div>`
+}
 $('startShift').onclick=()=>{if(data.active)return;data.active={id:crypto.randomUUID?.()||String(Date.now()),started:new Date().toISOString(),ended:null,rides:[],manifest:{shiftType:'D'}};persist();fillManifest()};
 $('saveManifest').onclick=()=>{if(!data.active){alert('Start your shift first, then enter the meter readings.');return}const m={};manifestFields.forEach(k=>m[k]=$(k).value);data.active.manifest=m;persist();alert('Meter readings and vehicle checks saved to this shift.')};
 manifestFields.forEach(k=>{if($(k))$(k).addEventListener('input',updateManifestTotals);if($(k))$(k).addEventListener('change',updateManifestTotals)});
 $('endShift').onclick=()=>{const s=data.active;if(!s)return;const mm={};manifestFields.forEach(k=>mm[k]=$(k).value);s.manifest=mm;if(!confirm('End this shift and save it to your history?'))return;s.ended=new Date().toISOString();data.shifts.push(s);data.active=null;persist();showReport(s)};
-const METER_START=3.50, METER_PER_MILE=2.90;
+const METER_START=()=>Number(data.settings.meterStartRate??3.50), METER_PER_MILE=()=>Number(data.settings.meterMileRate??2.90);
 function updateFareEstimate(){
  const raw=$('estimateMiles').value;
  const miles=raw===''?0:Math.max(0,Number(raw)||0);
- const mileage=miles*METER_PER_MILE;
- const estimate=Math.round((METER_START+mileage+Number.EPSILON)*100)/100;
+ const mileage=miles*METER_PER_MILE();
+ const estimate=Math.round((METER_START()+mileage+Number.EPSILON)*100)/100;
  $('estimatedFare').textContent=money(estimate);
- $('estimateBreakdown').textContent=`${money(METER_START)} starting fare + ${money(mileage)} mileage (${miles.toFixed(1)} mi)`;
+ $('estimateBreakdown').textContent=`${money(METER_START())} starting fare + ${money(mileage)} mileage (${miles.toFixed(1)} mi)`;
 }
 $('estimateMiles').addEventListener('input',updateFareEstimate);
 $('useEstimate').onclick=()=>{if($('estimateMiles').value.trim()===''){alert('Enter the estimated trip miles first.');$('estimateMiles').focus();return}updateFareEstimate();$('fare').value=$('estimatedFare').textContent.replace(/[^0-9.]/g,'');$('fare').focus()};
 $('clearEstimate').onclick=()=>{$('estimateMiles').value='';updateFareEstimate()};
 $('rideForm').addEventListener('reset',()=>{document.querySelectorAll('.address-suggestions').forEach(x=>{x.classList.remove('open');x.innerHTML=''})});
-$('rideForm').onsubmit=e=>{e.preventDefault();if(!data.active){alert('Start your shift first.');return}const fare=Number($('fare').value),tip=Number($('tip').value||0);if(!Number.isFinite(fare)||fare<0||tip<0){alert('Enter valid fare and tip amounts.');return}data.active.rides.push({pickup:$('pickup').value.trim(),dropoff:$('dropoff').value.trim(),fare:fare.toFixed(2),tip:tip.toFixed(2),note:$('rideNote').value.trim(),time:new Date().toISOString()});$('rideForm').reset();persist()};
-$('currentRides').addEventListener('click',e=>{const b=e.target.closest('[data-delete-ride]');if(!b||!data.active)return;const i=Number(b.dataset.deleteRide);if(confirm('Delete this ride?')){data.active.rides.splice(i,1);persist()}});
+$('rideForm').onsubmit=e=>{e.preventDefault();if(!data.active){alert('Start your shift first.');return}const fare=Number($('fare').value),voucher=Number($('voucher').value||0);if(![fare,voucher].every(Number.isFinite)||fare<0||voucher<0||voucher>fare){alert('Enter valid amounts. Voucher cannot be greater than total fare.');return}data.active.rides.push({pickup:$('pickup').value.trim(),stops:$('stops').value.split(/\\n/).map(x=>x.trim()).filter(Boolean),dropoff:$('dropoff').value.trim(),fare:fare.toFixed(2),voucher:voucher.toFixed(2),note:$('rideNote').value.trim(),time:new Date().toISOString()});$('rideForm').reset();persist()};
+$('currentRides').addEventListener('click',e=>{
+ if(!data.active)return;
+ const edit=e.target.closest('[data-edit-ride]');
+ if(edit){
+  const r=data.active.rides[Number(edit.dataset.editRide)];if(!r)return;
+  const pickup=prompt('Pickup address:',r.pickup||'');if(pickup===null)return;
+  const stops=prompt('Additional stops — one address per line:',(r.stops||[]).join('\\n'));if(stops===null)return;
+  const dropoff=prompt('Final destination:',r.dropoff||'');if(dropoff===null)return;
+  const fare=prompt('Total fare ($):',r.fare||'0');if(fare===null)return;
+  const voucher=prompt('Voucher paid to driver ($):',r.voucher||'0');if(voucher===null)return;
+  const note=prompt('Notes:',r.note||'');if(note===null)return;
+  const f=Number(fare),v=Number(voucher);
+  if(![f,v].every(Number.isFinite)||f<0||v<0||v>f){alert('Invalid amounts. Voucher cannot exceed total fare.');return}
+  if(!pickup.trim()||!dropoff.trim()){alert('Pickup and final destination are required.');return}
+  r.pickup=pickup.trim();r.stops=stops.split(/\\n/).map(x=>x.trim()).filter(Boolean);
+  r.dropoff=dropoff.trim();r.fare=f.toFixed(2);r.voucher=v.toFixed(2);r.note=note.trim();
+  persist();return;
+ }
+ const b=e.target.closest('[data-delete-ride]');if(!b)return;
+ const i=Number(b.dataset.deleteRide);if(confirm('Delete this ride?')){data.active.rides.splice(i,1);persist()}
+});
+
 function showReport(s){
  const t=totals(s),text=reportText(s);
  const choice=confirm('Shift saved. OK = share report by text/message. Cancel = create PDF.');
  if(choice)shareText(text,s);else makePdf(s);
 }
 function reportText(s){
- const t=totals(s),driverPay=t.fare*0.5+t.tips,companyMeterShare=t.fare*0.5,leaseFee=9,companyPay=companyMeterShare+leaseFee;
+ const t=totals(s),regularFare=t.fare-t.voucher,driverPay=regularFare*0.5+t.voucher,companyMeterShare=regularFare*0.5,leaseFee=9,companyPay=companyMeterShare+leaseFee;
  return `${data.settings.company||'ATLANTIC CAB'}\\nDRIVERS MANIFEST / SHIFT REPORT
 Driver: ${data.settings.driver||'Not specified'}
 Date: ${localDate(s.started)}
@@ -281,21 +255,21 @@ Ended: ${s.ended?new Date(s.ended).toLocaleTimeString():'—'}
 Cab #: ${manifestFor(s).cabNumber||'—'}   Shift: ${manifestFor(s).shiftType||'—'}
 
 METER READINGS (BEGINNING | ENDING | TOTAL)
-${[['ODOMETER','odometer'],['CASH','cash'],['EXTRAS','extras'],['METER MILES','meterMiles'],['PAID MILES','paidMiles'],['TRIPS','trips']].map(([label,key])=>{const m=manifestFor(s),a=m[key+'Start']??'',b=m[key+'End']??'',v=manifestDiff(m,key+'Start',key+'End');return `${label}: ${a||'—'} | ${b||'—'} | ${v===null?'—':v}`}).join('\n')}
+${[['ODOMETER','odometer'],['CASH','cash'],['EXTRAS','extras'],['METER MILES','meterMiles'],['PAID MILES','paidMiles'],['TRIPS','trips']].map(([label,key])=>{const m=manifestFor(s),a=m[key+'Start']??'',b=m[key+'End']??'',v=manifestDiff(m,key+'Start',key+'End');return `${label}: ${a||'—'} | ${b||'—'} | ${v===null?'—':v}`}).join('\\n')}
 CHECK OIL: ${manifestFor(s).checkOil||'—'}   CHECK TRANS: ${manifestFor(s).checkTrans||'—'}
 
 PASSENGER MANIFEST
-P/U TIME | P/U LOCATION | DESTINATION | METER FARE
-${s.rides.map((r,i)=>`${i+1}. ${new Date(r.time).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})} | ${r.pickup} | ${r.dropoff} | ${money(r.fare)}`).join('\\n')}
+P/U TIME | PICKUP | STOPS IN ORDER | FINAL DESTINATION | FARE | VOUCHER
+${s.rides.map((r,i)=>`${i+1}. ${new Date(r.time).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})} | ${r.pickup} | ${(r.stops||[]).join(' → ')} | ${r.dropoff} | ${money(r.fare)} | ${money(r.voucher||0)}`).join('\\n')}
 
 Trips: ${t.count}
-TOTAL METERED FARES: ${money(t.fare)}
-TOTAL TIPS (100% TO DRIVER): ${money(t.tips)}
+TOTAL FARES: ${money(t.fare)}
+TOTAL VOUCHERS (100% TO DRIVER): ${money(t.voucher)}
 
-DRIVER: 50% OF METERED FARES ${money(t.fare*0.5)} + ALL TIPS ${money(t.tips)} = ${money(driverPay)}
-COMPANY: 50% OF METERED FARES ${money(companyMeterShare)} + CAB LEASE ${money(leaseFee)} = ${money(companyPay)}
+DRIVER: 50% OF NON-VOUCHER FARES ${money(regularFare*0.5)} + FULL VOUCHERS ${money(t.voucher)} = ${money(driverPay)}
+COMPANY: 50% OF NON-VOUCHER FARES ${money(companyMeterShare)} + CAB LEASE ${money(leaseFee)} = ${money(companyPay)}
 
-Tips are NOT included in the 50/50 fare split.`;
+Voucher payments go 100% to the driver; only the remaining fare is split 50/50.`;
 }
 async function shareText(text,s){
  const phone=(data.settings.phone||'').replace(/[^\d+]/g,'');
@@ -307,14 +281,14 @@ function makePdf(s){
  const {jsPDF}=window.jspdf,doc=new jsPDF(),t=totals(s);let y=18;
  doc.setFillColor(5,18,7);doc.rect(0,0,210,34,'F');doc.setTextColor(72,245,96);doc.setFontSize(18);doc.text('ATLANTIC CAB',14,17);doc.setFontSize(10);doc.text('DRIVERS MANIFEST / SHIFT REPORT',14,25);
  doc.setTextColor(25,45,55);doc.setFontSize(11);y=46;
- const lines=[`Driver: ${data.settings.driver||'Not specified'}`,`Date: ${localDate(s.started)}`,`Started: ${new Date(s.started).toLocaleString()}`,`Ended: ${s.ended?new Date(s.ended).toLocaleString():'—'}`,`Passengers / trips: ${t.count}`,`TOTAL METERED FARES: ${money(t.fare)}`,`TOTAL TIPS (100% TO DRIVER): ${money(t.tips)}`,`DRIVER: 50% meter (${money(t.fare*0.5)}) + tips (${money(t.tips)}) = ${money(t.fare*0.5+t.tips)}`,`COMPANY: 50% meter (${money(t.fare*0.5)}) + $9 cab lease = ${money(t.fare*0.5+9)}`];
+ const lines=[`Driver: ${data.settings.driver||'Not specified'}`,`Date: ${localDate(s.started)}`,`Started: ${new Date(s.started).toLocaleString()}`,`Ended: ${s.ended?new Date(s.ended).toLocaleString():'—'}`,`Passengers / trips: ${t.count}`,`TOTAL FARES: ${money(t.fare)}`,`TOTAL VOUCHERS (100% TO DRIVER): ${money(t.voucher)}`,`DRIVER: 50% non-voucher fare (${money((t.fare-t.voucher)*0.5)}) + vouchers (${money(t.voucher)}) = ${money((t.fare-t.voucher)*0.5+t.voucher)}`,`COMPANY: 50% non-voucher fare (${money((t.fare-t.voucher)*0.5)}) + $9 cab lease = ${money((t.fare-t.voucher)*0.5+9)}`];
  lines.forEach((line,i)=>{doc.setFont(undefined,i===7?'bold':'normal');doc.text(line,14,y);y+=7});
  y+=5;const mm=manifestFor(s);doc.setFont(undefined,'bold');doc.text('METER READINGS',14,y);y+=7;doc.setFont(undefined,'normal');
  const mrows=[['ITEM','BEGINNING','ENDING','TOTAL'],...[['ODOMETER','odometer'],['CASH','cash'],['EXTRAS','extras'],['METER MILES','meterMiles'],['PAID MILES','paidMiles'],['TRIPS','trips']].map(([label,key])=>{const a=mm[key+'Start']??'',b=mm[key+'End']??'',v=manifestDiff(mm,key+'Start',key+'End');return [label,a||'—',b||'—',v===null?'—':String(v)]})];
  mrows.forEach((row,i)=>{if(y>275){doc.addPage();y=18}doc.setFont(undefined,i===0?'bold':'normal');doc.text(row.map(String).join('    |    '),14,y);y+=6});
  doc.setFont(undefined,'normal');doc.text(`CHECK OIL: ${mm.checkOil||'—'}     CHECK TRANS: ${mm.checkTrans||'—'}     CAB #: ${mm.cabNumber||'—'}     SHIFT: ${mm.shiftType||'—'}`,14,y);y+=9;
  y+=5;doc.setFont(undefined,'bold');doc.text('RIDE DETAILS',14,y);y+=8;doc.setFont(undefined,'normal');
- s.rides.forEach((r,i)=>{const content=doc.splitTextToSize(`${i+1}. ${r.pickup} to ${r.dropoff} | Fare ${money(r.fare)} | Tip ${money(r.tip||0)}${r.note?' | '+r.note:''}`,180);if(y+content.length*6>280){doc.addPage();y=18}doc.text(content,14,y);y+=content.length*6+3});
+ s.rides.forEach((r,i)=>{const content=doc.splitTextToSize(`${i+1}. ${r.pickup} to ${r.dropoff} | Fare ${money(r.fare)}${r.note?' | '+r.note:''}`,180);if(y+content.length*6>280){doc.addPage();y=18}doc.text(content,14,y);y+=content.length*6+3});
  doc.save(`Atlantic-Taxi-Shift-${localDate(s.started)}.pdf`);
 }
 function renderHistory(){
@@ -350,18 +324,18 @@ function renderYear(){
  $('monthlyBreakdown').innerHTML=months.join('');
 }
 $('yearSelect').onchange=renderYear;
-$('saveSettings').onclick=()=>{data.settings={company:$('bossName').value.trim(),phone:$('bossPhone').value.trim(),driver:$('driverName').value.trim()};persist();alert('Details saved.')};
-function fillSettings(){$('bossName').value=data.settings.company||'';$('bossPhone').value=data.settings.phone||'';$('driverName').value=data.settings.driver||''}
+$('saveSettings').onclick=()=>{const start=Number($('meterStartRate').value),mile=Number($('meterMileRate').value);if(!Number.isFinite(start)||start<0||!Number.isFinite(mile)||mile<0){alert('Enter valid non-negative meter rates.');return}data.settings={...data.settings,company:$('bossName').value.trim(),phone:$('bossPhone').value.trim(),driver:$('driverName').value.trim(),meterStartRate:start,meterMileRate:mile};persist();updateFareEstimate();alert('Details and rates saved.')};
+function fillSettings(){$('bossName').value=data.settings.company||'';$('bossPhone').value=data.settings.phone||'';$('driverName').value=data.settings.driver||'';$('meterStartRate').value=data.settings.meterStartRate??3.50;$('meterMileRate').value=data.settings.meterMileRate??2.90}
 $('exportJson').onclick=()=>download('Atlantic-Taxi-Backup-'+localDate(new Date())+'.json',JSON.stringify(data,null,2),'application/json');
 $('importJson').onclick=()=>$('backupFile').click();
 $('backupFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!Array.isArray(d.shifts)||!d.settings)throw Error();if(!confirm('Import this backup? It will replace the data currently stored on this device.'))return;data=d;persist();fillSettings();alert('Backup imported.')}catch{alert('That file does not look like a valid Atlantic Taxi Tracker backup.')}e.target.value=''};
-$('exportCsv').onclick=()=>{const rows=[['Shift date','Shift started','Shift ended','Pickup','Drop-off','Fare','Tip','Notes']];allShifts().forEach(s=>s.rides.forEach(r=>rows.push([localDate(s.started),s.started,s.ended||'',r.pickup,r.dropoff,r.fare,r.tip||0,r.note||''])));const csv=rows.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');download('Atlantic-Taxi-Rides.csv',csv,'text/csv')};
+$('exportCsv').onclick=()=>{const rows=[['Shift date','Shift started','Shift ended','Pickup','Drop-off','Fare','Voucher','Notes']];allShifts().forEach(s=>s.rides.forEach(r=>rows.push([localDate(s.started),s.started,s.ended||'',r.pickup,r.dropoff,r.fare,r.voucher||0,r.note||''])));const csv=rows.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');download('Atlantic-Taxi-Rides.csv',csv,'text/csv')};
 function download(name,content,type){const a=document.createElement('a'),u=URL.createObjectURL(new Blob([content],{type}));a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
 document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('active',x.id===b.dataset.tab));if(b.dataset.tab==='settings')fillSettings();if(b.dataset.tab==='shift')fillManifest();render()});
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;$('installBtn').hidden=false});
 $('installBtn').onclick=async()=>{if(!deferredInstall)return;deferredInstall.prompt();await deferredInstall.userChoice;deferredInstall=null;$('installBtn').hidden=true};
 if('serviceWorker'in navigator && location.protocol.startsWith('http'))window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
-setupAddressAutocomplete('pickup','pickupSuggestions');setupAddressAutocomplete('dropoff','dropoffSuggestions');
+
 render();fillSettings();fillManifest();updateFareEstimate();
 })();
 </script>
