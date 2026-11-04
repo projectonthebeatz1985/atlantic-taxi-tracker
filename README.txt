@@ -53,3 +53,12 @@ The shift history includes a Delete shift action. It asks for confirmation befor
 The app now uses the supplied green Atlantic Cab logo, a black and emerald-green interface, a matching Android launcher icon, and green/black PDF report header. Upload all updated files including atlantic-cab-logo.png and icon-512.png to the GitHub Pages repository root. The service worker cache version was updated so phones fetch the new design.
 
 Version 10 adds a darkened Atlantic Cab background image and higher-contrast panels, buttons, navigation and form fields for readability.
+
+
+## Version 20: professional redesign, sounds and alerts
+- New cleaner interface: solid dark panels, bottom navigation bar, collapsible meter and fare-estimate sections, live shift timer. Same Atlantic Cab green and black.
+- Sounds (Settings > Sounds & alerts): synthesised chimes for shift start/end, saved rides, warnings and alerts, with volume control. No audio files needed.
+- Alerts: long-shift reminder, earnings goal reached, beginning-odometer reminder, vehicle check "Needs attention" warning, backup reminder. Optional vibration and phone notifications.
+- Alerts run while the app is open or in the background; a web app cannot fire them if it has been fully closed.
+- Fixes: history and yearly totals no longer show NaN; extra stops now split correctly; text report line breaks fixed; the PDF library is cached for offline use after first load.
+- Upload ALL files again (including sw.js) so phones pick up the new version.
