@@ -11,7 +11,7 @@
 <title>Atlantic Taxi Tracker</title>
 <style>
 :root{
- --bg:#070b08;--surface:#0d140f;--surface2:#121b14;--line:#1e2c21;--line2:#2c4231;
+ --bg:#070b08;--surface:rgba(13,20,15,.78);--surface2:rgba(18,27,20,.84);--line:#1e2c21;--line2:#2c4231;
  --ink:#eef6ef;--muted:#8fa493;--green:#39f05a;--green-d:#168b2d;--red:#ff6b6b;--amber:#f2c14e;
  --r:10px;--nav-h:64px;
 }
@@ -19,12 +19,12 @@
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;-webkit-font-smoothing:antialiased;position:relative;isolation:isolate}
 /* Atlantic Cab artwork: a quiet backdrop that fades into the page */
-body::before{content:"";position:fixed;inset:0 0 auto 0;height:360px;z-index:-1;background:linear-gradient(180deg,rgba(7,11,8,.55),var(--bg) 92%),url("atlantic-cab-background.webp") center 20%/cover no-repeat;opacity:.38}
+body::before{content:"";position:fixed;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(7,11,8,.34),rgba(7,11,8,.62)),url("atlantic-cab-background.webp") center center/cover no-repeat;opacity:.92}
 h1,h2,h3{margin:0;font-weight:650;letter-spacing:-.01em}
 h2{font-size:16px}h3{font-size:14px}
 
 /* Header */
-header{position:sticky;top:0;z-index:20;background:rgba(5,8,6,.9);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}
+header{position:sticky;top:0;z-index:20;background:rgba(5,8,6,.76);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}
 .head{max-width:760px;margin:auto;height:56px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
 .brand img{height:34px;width:auto;display:block;mix-blend-mode:screen}
 .head-right{display:flex;align-items:center;gap:10px}
@@ -145,7 +145,7 @@ input[type=range]{padding:0;min-height:30px;border:0;background:transparent;acce
 .range-row output{min-width:38px;text-align:right;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
 
 /* Bottom navigation */
-nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(5,8,6,.96);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(5,8,6,.82);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
 .nav-in{max-width:760px;margin:auto;display:grid;grid-template-columns:repeat(5,1fr)}
 nav button{background:none;border:0;border-radius:0;min-height:var(--nav-h);padding:8px 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--muted);font-size:10.5px;font-weight:600;position:relative}
 nav button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
@@ -157,7 +157,7 @@ footer{text-align:center;color:#5f7263;font-size:12px;padding:14px 0 0}
 
 /* Toasts */
 #toasts{position:fixed;top:calc(64px + env(safe-area-inset-top));left:0;right:0;z-index:60;display:flex;flex-direction:column;align-items:center;gap:8px;padding:0 12px;pointer-events:none}
-.toast{pointer-events:auto;width:100%;max-width:440px;display:flex;gap:12px;align-items:flex-start;background:#0f1912;border:1px solid var(--line2);border-left:3px solid var(--green);border-radius:8px;padding:12px 14px;box-shadow:0 10px 30px rgba(0,0,0,.55);animation:tin .22s ease-out}
+.toast{pointer-events:auto;width:100%;max-width:440px;display:flex;gap:12px;align-items:flex-start;background:rgba(15,25,18,.92);border:1px solid var(--line2);border-left:3px solid var(--green);border-radius:8px;padding:12px 14px;box-shadow:0 10px 30px rgba(0,0,0,.55);animation:tin .22s ease-out}
 .toast.warn{border-left-color:var(--amber)}.toast.error{border-left-color:var(--red)}
 .toast.out{opacity:0;transform:translateY(-8px);transition:.2s}
 .toast b{display:block;font-size:14px;font-weight:650}
@@ -167,7 +167,7 @@ footer{text-align:center;color:#5f7263;font-size:12px;padding:14px 0 0}
 
 /* Modal */
 .overlay{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.72);display:flex;align-items:flex-end;justify-content:center;animation:fade .15s}
-.sheet{width:100%;max-width:480px;max-height:92vh;overflow:auto;background:var(--surface);border:1px solid var(--line2);border-radius:14px 14px 0 0;padding:20px 18px calc(18px + env(safe-area-inset-bottom));animation:up .2s ease-out}
+.sheet{width:100%;max-width:480px;max-height:92vh;overflow:auto;background:rgba(13,20,15,.94);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line2);border-radius:14px 14px 0 0;padding:20px 18px calc(18px + env(safe-area-inset-bottom));animation:up .2s ease-out}
 .sheet h3{font-size:17px;margin-bottom:6px}
 .sheet p{margin:0;color:#b9c9bc;font-size:14px;line-height:1.5}
 .sheet .actions{margin-top:18px}
@@ -325,7 +325,7 @@ footer{text-align:center;color:#5f7263;font-size:12px;padding:14px 0 0}
   <div class="actions"><button id="exportCsv" class="secondary">Export rides as CSV</button></div>
   <hr><div class="notice">Ride addresses and earnings stay on this device unless you choose to share or export a report. Nothing is sent to your boss automatically.</div>
  </div>
- <footer>Atlantic Taxi Tracker · v22</footer>
+ <footer>Atlantic Taxi Tracker · v23</footer>
 </section>
 </main>
 
