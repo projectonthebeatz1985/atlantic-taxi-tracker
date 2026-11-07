@@ -57,6 +57,15 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 .stat.accent strong{color:var(--green)}
 @media(min-width:620px){.stats.four{grid-template-columns:repeat(4,minmax(0,1fr))}}
 
+
+/* Voice-to-text controls */
+.voice-field{position:relative;width:100%}
+.voice-field>input,.voice-field>textarea{padding-right:54px}
+.voice-mic{position:absolute;right:7px;top:7px;width:38px;height:34px;min-height:34px;padding:0;border:1px solid var(--line2);border-radius:7px;background:#142017;color:var(--green);display:grid;place-items:center;cursor:pointer}
+.voice-mic svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.voice-mic.listening{background:#3b1515;color:#ff7777;border-color:#a33}
+.voice-mic:disabled{opacity:.5;cursor:not-allowed}
+
 /* Forms */
 label{display:block;font-size:12.5px;font-weight:600;color:#b9c9bc;margin:14px 0 6px}
 input,textarea,select{width:100%;border:1px solid var(--line2);border-radius:8px;padding:11px 12px;font:inherit;font-size:16px;background:#080d09;color:var(--ink);min-height:46px;transition:border-color .15s,box-shadow .15s}
@@ -378,10 +387,44 @@ function toast(msg,{type='ok',title='',sticky=false,sound}={}){
  if(!sticky)setTimeout(close,type==='ok'?3200:5000);
  if(sound)sfx(sound);
 }
+
+function addVoiceControls(root=document){
+ const fields=root.querySelectorAll('input[type="text"],input:not([type]),textarea');
+ fields.forEach(field=>{
+  if(field.dataset.voiceReady || field.disabled || field.readOnly)return;
+  field.dataset.voiceReady='1';
+  const wrap=document.createElement('div');wrap.className='voice-field';
+  field.parentNode.insertBefore(wrap,field);wrap.appendChild(field);
+  const mic=document.createElement('button');mic.type='button';mic.className='voice-mic';
+  mic.setAttribute('aria-label','Dictate text');mic.title='Talk to text';
+  mic.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5m-4 0h8"/></svg>';
+  mic.addEventListener('click',()=>{
+   const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+   if(!SpeechRecognition){toast('Voice typing is not supported by this browser. Try Chrome.');return;}
+   const recognition=new SpeechRecognition();recognition.lang=navigator.language||'en-US';recognition.interimResults=false;recognition.maxAlternatives=1;
+   mic.classList.add('listening');mic.setAttribute('aria-label','Listening');mic.title='Listening…';
+   recognition.onresult=event=>{
+    const spoken=event.results[0][0].transcript.trim();
+    const start=field.selectionStart??field.value.length,end=field.selectionEnd??field.value.length;
+    const before=field.value.slice(0,start),after=field.value.slice(end);
+    const separator=before && !/\s$/.test(before) ? ' ' : '';
+    field.value=before+separator+spoken+after;
+    field.dispatchEvent(new Event('input',{bubbles:true}));
+    field.dispatchEvent(new Event('change',{bubbles:true}));
+   };
+   recognition.onerror=event=>{if(event.error!=='no-speech')toast('Voice typing error: '+event.error);};
+   recognition.onend=()=>{mic.classList.remove('listening');mic.setAttribute('aria-label','Dictate text');mic.title='Talk to text';};
+   try{recognition.start();}catch(e){mic.classList.remove('listening');toast('Could not start voice typing. Please try again.');}
+  });
+  wrap.appendChild(mic);
+ });
+}
+
 function openModal(inner,collect){
  return new Promise(res=>{
   const ov=document.createElement('div');ov.className='overlay';
   ov.innerHTML=`<div class="sheet" role="dialog" aria-modal="true">${inner}</div>`;
+  addVoiceControls(ov);
   const prev=document.activeElement;
   const done=v=>{const out=collect?collect(ov,v):v;ov.remove();document.removeEventListener('keydown',key);prev&&prev.focus&&prev.focus();res(out)};
   const key=e=>{if(e.key==='Escape')done(null)};
@@ -497,22 +540,31 @@ $('rideForm').onsubmit=e=>{
  toast(`${money(fare)} added. ${data.active.rides.length} passenger${data.active.rides.length===1?'':'s'} this shift.`,{title:'Ride saved',sound:'success'});
  checkAlerts();
 };
+function rideTimeInputValue(value){
+ const d=new Date(value||Date.now());
+ return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+function withRideClockTime(original,time){
+ const d=new Date(original||Date.now()),parts=String(time||'').split(':').map(Number);
+ if(parts.length!==2||parts.some(n=>!Number.isFinite(n)))return original;
+ d.setHours(parts[0],parts[1],0,0);return d.toISOString();
+}
 async function editRide(r,v,err){
- v=v||{pickup:r.pickup||'',stops:(r.stops||[]).join('\n'),dropoff:r.dropoff||'',fare:r.fare||'0',voucher:r.voucher||'0',note:r.note||''};
+ v=v||{pickup:r.pickup||'',stops:(r.stops||[]).join('\n'),dropoff:r.dropoff||'',fare:r.fare||'0',voucher:r.voucher||'0',note:r.note||'',time:rideTimeInputValue(r.time)};
  const out=await openModal(`<h3>Edit ride</h3>
-  <label for="e_pickup" style="margin-top:12px">Pickup address</label><input id="e_pickup" value="${esc(v.pickup)}">
+  <label for="e_time" style="margin-top:12px">Pickup time</label><input id="e_time" type="time" value="${esc(v.time||rideTimeInputValue(r.time))}">\n  <label for="e_pickup">Pickup address</label><input id="e_pickup" value="${esc(v.pickup)}">
   <label for="e_stops">Additional stops (one per line)</label><textarea id="e_stops">${esc(v.stops)}</textarea>
   <label for="e_dropoff">Final destination</label><input id="e_dropoff" value="${esc(v.dropoff)}">
   <div class="row"><div><label for="e_fare">Total fare ($)</label><input id="e_fare" type="number" step="0.01" min="0" inputmode="decimal" value="${esc(v.fare)}"></div><div><label for="e_voucher">Voucher ($)</label><input id="e_voucher" type="number" step="0.01" min="0" inputmode="decimal" value="${esc(v.voucher)}"></div></div>
   <label for="e_note">Notes</label><input id="e_note" value="${esc(v.note)}">
   ${err?`<div class="err">${esc(err)}</div>`:''}
   <div class="actions"><button class="secondary" data-v="cancel">Cancel</button><button class="gold" data-v="save">Save changes</button></div>`,
-  (ov,val)=>val==='save'?{pickup:ov.querySelector('#e_pickup').value,stops:ov.querySelector('#e_stops').value,dropoff:ov.querySelector('#e_dropoff').value,fare:ov.querySelector('#e_fare').value,voucher:ov.querySelector('#e_voucher').value,note:ov.querySelector('#e_note').value}:null);
+  (ov,val)=>val==='save'?{time:ov.querySelector('#e_time').value,pickup:ov.querySelector('#e_pickup').value,stops:ov.querySelector('#e_stops').value,dropoff:ov.querySelector('#e_dropoff').value,fare:ov.querySelector('#e_fare').value,voucher:ov.querySelector('#e_voucher').value,note:ov.querySelector('#e_note').value}:null);
  if(!out)return;
  const f=Number(out.fare),vo=Number(out.voucher||0);
  if(![f,vo].every(Number.isFinite)||f<0||vo<0||vo>f)return editRide(r,out,'Voucher cannot exceed the total fare.');
  if(!out.pickup.trim()||!out.dropoff.trim())return editRide(r,out,'Pickup and final destination are required.');
- r.pickup=out.pickup.trim();r.stops=splitLines(out.stops);r.dropoff=out.dropoff.trim();r.fare=f.toFixed(2);r.voucher=vo.toFixed(2);r.note=out.note.trim();
+ r.time=withRideClockTime(r.time,out.time);r.pickup=out.pickup.trim();r.stops=splitLines(out.stops);r.dropoff=out.dropoff.trim();r.fare=f.toFixed(2);r.voucher=vo.toFixed(2);r.note=out.note.trim();
  persist();toast('Ride updated.',{sound:'success'});
 }
 $('currentRides').addEventListener('click',async e=>{
@@ -789,6 +841,7 @@ $('installBtn').onclick=async()=>{if(!deferredInstall)return;deferredInstall.pro
 if('serviceWorker'in navigator && location.protocol.startsWith('http'))window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){updateClock();checkAlerts()}});
 
+addVoiceControls(document);
 render();fillSettings();fillManifest();updateFareEstimate();
 let tick=0;setInterval(()=>{updateClock();if(++tick%30===0)checkAlerts()},1000);
 setTimeout(checkAlerts,1500);
