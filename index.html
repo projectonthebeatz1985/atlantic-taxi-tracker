@@ -146,8 +146,8 @@ input[type=range]{padding:0;min-height:30px;border:0;background:transparent;acce
 
 /* Bottom navigation */
 nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(5,8,6,.96);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
-.nav-in{max-width:760px;margin:auto;display:grid;grid-template-columns:repeat(4,1fr)}
-nav button{background:none;border:0;border-radius:0;min-height:var(--nav-h);padding:8px 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--muted);font-size:11.5px;font-weight:600;position:relative}
+.nav-in{max-width:760px;margin:auto;display:grid;grid-template-columns:repeat(5,1fr)}
+nav button{background:none;border:0;border-radius:0;min-height:var(--nav-h);padding:8px 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--muted);font-size:10.5px;font-weight:600;position:relative}
 nav button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 nav button.active{color:var(--green)}
 nav button.active::before{content:"";position:absolute;top:0;left:30%;right:30%;height:2px;background:var(--green);border-radius:0 0 2px 2px}
@@ -254,6 +254,23 @@ footer{text-align:center;color:#5f7263;font-size:12px;padding:14px 0 0}
  </details>
 </section>
 
+
+<section id="reports" class="panel">
+ <div class="card">
+  <div class="card-head"><h2>Police &amp; Incident Reports</h2></div>
+  <p class="muted" style="margin:4px 0 14px">Manually record unpaid fares, disputes, safety concerns, or other incidents. Records stay on this device.</p>
+  <div class="stats two" style="margin-bottom:14px">
+   <div class="stat"><span>Open unpaid balances</span><strong id="reportBalance">$0.00</strong></div>
+   <div class="stat"><span>Incident records</span><strong id="reportCount">0</strong></div>
+  </div>
+  <button class="gold" id="addIncident" style="width:100%">＋ Add incident / unpaid fare</button>
+ </div>
+ <div class="card">
+  <div class="card-head"><h2>Saved reports</h2></div>
+  <div id="incidentList" class="empty">No incident reports yet. Add one when you need to document an incident.</div>
+ </div>
+</section>
+
 <section id="history" class="panel">
  <div class="card"><div class="card-head"><h2>Shift history</h2></div>
   <div class="row"><div><label for="historyYear" style="margin-top:0">Year</label><select id="historyYear"></select></div><div><label for="historyMonth" style="margin-top:0">Month</label><select id="historyMonth"><option value="">All months</option></select></div></div>
@@ -308,7 +325,7 @@ footer{text-align:center;color:#5f7263;font-size:12px;padding:14px 0 0}
   <div class="actions"><button id="exportCsv" class="secondary">Export rides as CSV</button></div>
   <hr><div class="notice">Ride addresses and earnings stay on this device unless you choose to share or export a report. Nothing is sent to your boss automatically.</div>
  </div>
- <footer>Atlantic Taxi Tracker · v20</footer>
+ <footer>Atlantic Taxi Tracker · v22</footer>
 </section>
 </main>
 
@@ -316,6 +333,7 @@ footer{text-align:center;color:#5f7263;font-size:12px;padding:14px 0 0}
  <button class="active" data-tab="shift"><svg viewBox="0 0 24 24"><path d="M5 16l1.4-4.6A2 2 0 0 1 8.3 10h7.4a2 2 0 0 1 1.9 1.4L19 16"/><path d="M3.5 16h17v3h-17z"/><path d="M7 19v1.5M17 19v1.5"/><path d="M10 7h4"/></svg>Shift</button>
  <button data-tab="history"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>History</button>
  <button data-tab="year"><svg viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>Earnings</button>
+ <button data-tab="reports"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v5c0 5-3.4 8.5-8 10-4.6-1.5-8-5-8-10V6l8-3z"/><path d="M9 12l2 2 4-4"/></svg>Reports</button>
  <button data-tab="settings"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>Settings</button>
 </div></nav>
 
@@ -332,6 +350,7 @@ const clock=d=>new Date(d).toLocaleTimeString([], {hour:'numeric',minute:'2-digi
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const DEFAULT={shifts:[],active:null,settings:{}};
 let data=load(), deferredInstall=null;
+if(!Array.isArray(data.incidents))data.incidents=[];
 function load(){try{const d=JSON.parse(localStorage.getItem(KEY));return d&&d.shifts?d:{...DEFAULT,shifts:[],settings:{}}}catch{return {...DEFAULT,shifts:[],settings:{}}}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(data))}catch{toast('Could not save to this device. Storage may be full or blocked.',{type:'error',title:'Save failed',sound:'error'})}}
 function persist(){save();render()}
@@ -475,7 +494,7 @@ function render(){
  $('startShift').disabled=!!s;$('endShift').disabled=!s;$('saveRide').disabled=!s;
  $('currentRides').className=s&&s.rides.length?'':'empty';
  $('currentRides').innerHTML=s&&s.rides.length?[...s.rides].map((r,i)=>rideHtml(r,i,true)).reverse().join(''):'Start a shift to begin recording rides.';
- updateClock();renderHistory();renderYear();
+ updateClock();renderHistory();renderYear();renderIncidents();
 }
 function rideHtml(r,i,canEdit){
  const via=(r.stops||[]).filter(Boolean);
@@ -828,6 +847,122 @@ function checkAlerts(){
   if(!last||Date.now()-last>14*864e5){checkAlerts.backupShown=true;toast('You have not exported a backup in over two weeks. Go to Settings to export one.',{type:'warn',title:'Back up your records',sticky:true,sound:'warn'})}
  }
 }
+
+
+/* ---------- Police & incident reports ---------- */
+function incidentDateValue(value){
+ const d=value?new Date(value):new Date();
+ return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);
+}
+function renderIncidents(){
+ const items=[...(data.incidents||[])].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+ const balance=items.filter(x=>x.status!=='Paid').reduce((n,x)=>n+Math.max(0,Number(x.owed)||0),0);
+ $('reportBalance').textContent=money(balance);
+ $('reportCount').textContent=items.length;
+ $('incidentList').className=items.length?'':'empty';
+ $('incidentList').innerHTML=items.length?items.map(x=>`
+  <article class="ride" style="align-items:flex-start">
+   <div class="ride-main" style="min-width:0;flex:1">
+    <div class="ride-time">${niceDate(x.when)} · ${clock(x.when)}</div>
+    <b>${esc(x.type||'Incident')}</b>
+    ${x.person?`<span>${esc(x.person)}</span>`:''}
+    ${x.pickup?`<span>Pickup: ${esc(x.pickup)}</span>`:''}
+    ${x.destination?`<span>Destination: ${esc(x.destination)}</span>`:''}
+    ${x.details?`<small>${esc(x.details)}</small>`:''}
+    ${x.caseNumber?`<small>Police case #: ${esc(x.caseNumber)}</small>`:''}
+    <small>Status: ${esc(x.status||'Open')}${Number(x.owed)>0?' · Outstanding: '+money(x.owed):''}</small>
+   </div>
+   <div class="ride-side">
+    ${Number(x.owed)>0?`<div class="money">${money(x.owed)}</div>`:''}
+    <div class="ride-btns" style="flex-direction:column">
+     <button class="secondary small" data-edit-incident="${esc(x.id)}">Edit</button>
+     <button class="secondary small" data-share-incident="${esc(x.id)}">Share</button>
+     <button class="danger small" data-delete-incident="${esc(x.id)}">Delete</button>
+    </div>
+   </div>
+  </article>`).join(''):'No incident reports yet. Add one when you need to document an incident.';
+}
+async function editIncident(id){
+ const old=(data.incidents||[]).find(x=>x.id===id)||{};
+ const types=['Unpaid fare','Refused payment','Passenger dispute','Safety concern','Property damage','Other incident'];
+ const form=await openModal(`
+  <h3>${id?'Edit incident report':'New incident report'}</h3>
+  <p>Record what happened factually. An unpaid balance is your recorded claim, not a determination that a crime occurred.</p>
+  <label>Incident type</label><select id="irType">${types.map(t=>`<option ${old.type===t?'selected':''}>${t}</option>`).join('')}</select>
+  <label>Date and time</label><input id="irWhen" type="datetime-local" value="${incidentDateValue(old.when)}">
+  <label>Passenger / person description</label><input id="irPerson" value="${esc(old.person||'')}" placeholder="Name or physical description">
+  <label>Contact information (optional)</label><input id="irContact" value="${esc(old.contact||'')}" placeholder="Phone or other contact">
+  <label>Pickup location</label><input id="irPickup" value="${esc(old.pickup||'')}" placeholder="Pickup address">
+  <label>Destination</label><input id="irDestination" value="${esc(old.destination||'')}" placeholder="Destination address">
+  <div class="row">
+   <div><label>Total fare ($)</label><input id="irFare" type="number" min="0" step=".01" value="${Number(old.fare)||0}"></div>
+   <div><label>Amount paid ($)</label><input id="irPaid" type="number" min="0" step=".01" value="${Number(old.paid)||0}"></div>
+  </div>
+  <label>Outstanding balance ($)</label><input id="irOwed" type="number" min="0" step=".01" value="${Number(old.owed)||0}" placeholder="Amount still owed">
+  <label>Payment / incident status</label><select id="irStatus">${['Open','Partial','Paid','Disputed','Police contacted'].map(t=>`<option ${old.status===t?'selected':''}>${t}</option>`).join('')}</select>
+  <label>What happened? (facts, statements, actions)</label><textarea id="irDetails" rows="4" placeholder="Describe the incident in order...">${esc(old.details||'')}</textarea>
+  <label>Witnesses (optional)</label><textarea id="irWitnesses" rows="2" placeholder="Names and contact details">${esc(old.witnesses||'')}</textarea>
+  <label>Police department contacted (optional)</label><input id="irDepartment" value="${esc(old.department||'')}" placeholder="Department name">
+  <div class="row">
+   <div><label>Officer name (optional)</label><input id="irOfficer" value="${esc(old.officer||'')}"></div>
+   <div><label>Police case / report #</label><input id="irCase" value="${esc(old.caseNumber||'')}"></div>
+  </div>
+  <label>Additional notes</label><textarea id="irNotes" rows="2">${esc(old.notes||'')}</textarea>
+  <div class="actions"><button class="secondary" data-v="cancel">Cancel</button><button class="gold" data-v="save">Save report</button></div>
+ `,(ov,v)=>{
+  if(v!=='save')return null;
+  const val=id=>ov.querySelector('#'+id)?.value?.trim()||'';
+  const num=id=>Math.max(0,Number(val(id))||0);
+  return {type:val('irType'),when:new Date(val('irWhen')||Date.now()).toISOString(),person:val('irPerson'),contact:val('irContact'),pickup:val('irPickup'),destination:val('irDestination'),fare:num('irFare'),paid:num('irPaid'),owed:num('irOwed'),status:val('irStatus'),details:val('irDetails'),witnesses:val('irWitnesses'),department:val('irDepartment'),officer:val('irOfficer'),caseNumber:val('irCase'),notes:val('irNotes')};
+ });
+ if(!form)return;
+ if(form.paid>=form.fare&&form.fare>0&&form.owed===0)form.status='Paid';
+ if(!Array.isArray(data.incidents))data.incidents=[];
+ const record={...old,...form,id:old.id||('incident-'+Date.now()),createdAt:old.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};
+ if(id){const i=data.incidents.findIndex(x=>x.id===id);if(i>=0)data.incidents[i]=record;else data.incidents.push(record)}else data.incidents.push(record);
+ save();renderIncidents();toast('Incident report saved.',{sound:'success'});
+}
+function incidentText(x){
+ return [
+  'ATLANTIC TAXI — INCIDENT REPORT',
+  'Incident: '+(x.type||'Incident'),
+  'Date/time: '+new Date(x.when).toLocaleString(),
+  'Person: '+(x.person||'Not provided'),
+  'Contact: '+(x.contact||'Not provided'),
+  'Pickup: '+(x.pickup||'Not provided'),
+  'Destination: '+(x.destination||'Not provided'),
+  'Fare: '+money(x.fare)+' | Paid: '+money(x.paid)+' | Outstanding claimed: '+money(x.owed),
+  'Status: '+(x.status||'Open'),
+  'Description: '+(x.details||'Not provided'),
+  'Witnesses: '+(x.witnesses||'Not provided'),
+  'Police department: '+(x.department||'Not provided'),
+  'Officer: '+(x.officer||'Not provided'),
+  'Police case/report #: '+(x.caseNumber||'Not provided'),
+  'Additional notes: '+(x.notes||'None'),
+  '',
+  'This is a factual record supplied by the reporting driver. Any outstanding amount is an amount claimed to be owed.'
+ ].join('\n');
+}
+$('addIncident').onclick=()=>editIncident(null);
+$('incidentList').addEventListener('click',async e=>{
+ const edit=e.target.closest('[data-edit-incident]');
+ const del=e.target.closest('[data-delete-incident]');
+ const share=e.target.closest('[data-share-incident]');
+ if(edit){editIncident(edit.dataset.editIncident);return}
+ if(del){
+  const id=del.dataset.deleteIncident;
+  if(await confirmBox({title:'Delete incident report?',message:'This will permanently remove this report from this device.',ok:'Delete',danger:true})){
+   data.incidents=data.incidents.filter(x=>x.id!==id);save();renderIncidents();toast('Incident report deleted.');
+  }return;
+ }
+ if(share){
+  const x=data.incidents.find(v=>v.id===share.dataset.shareIncident);if(!x)return;
+  const body=incidentText(x);
+  if(navigator.share){try{await navigator.share({title:'Atlantic Taxi Incident Report',text:body})}catch{}}
+  else if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(body);toast('Report copied to clipboard.')}
+  else{const blob=new Blob([body],{type:'text/plain'});download('Atlantic-Incident-Report.txt',body,'text/plain');}
+ }
+});
 
 /* ---------- Navigation & PWA ---------- */
 document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{

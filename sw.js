@@ -1,4 +1,4 @@
-const CACHE='atlantic-taxi-v20-pro-alerts';
+const CACHE='atlantic-taxi-v22-incident-reports';
 const CORE=['./','./index.html','./manifest.webmanifest','./icon.svg','./icon-512.png','./atlantic-cab-logo.png','./atlantic-cab-background.webp'];
 const PDF_LIB='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
 self.addEventListener('install',e=>e.waitUntil(
