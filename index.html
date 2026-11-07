@@ -493,7 +493,7 @@ function render(){
  $('shiftStatus').textContent=s?'Started '+clock(s.started):'No active shift';
  $('startShift').disabled=!!s;$('endShift').disabled=!s;$('saveRide').disabled=!s;
  $('currentRides').className=s&&s.rides.length?'':'empty';
- $('currentRides').innerHTML=s&&s.rides.length?[...s.rides].map((r,i)=>rideHtml(r,i,true)).reverse().join(''):'Start a shift to begin recording rides.';
+ $('currentRides').innerHTML=s&&s.rides.length?[...s.rides].map((r,i)=>rideHtml(r,i,true)).join(''):'Start a shift to begin recording rides.';
  updateClock();renderHistory();renderYear();renderIncidents();
 }
 function rideHtml(r,i,canEdit){
