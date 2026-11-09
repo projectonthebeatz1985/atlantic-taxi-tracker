@@ -1,9 +1,15 @@
-ATLANTIC TAXI TRACKER V35 — MAP POPUP CONTAINED CLOSE BUTTON
+ATLANTIC TAXI TRACKER V36 — SINGLE SCROLL DRIVER HUB
 
-Based on V34.
-- Popup bubble has a minimum width so the close X fits inside it.
-- Close button is positioned within the bubble with consistent padding.
-- Dark name text remains readable.
-- No GPS, dispatch, Supabase, or main tracker design changes.
+Based on V35 Popup Contained.
+- Driver Hub iframe now grows to fit its content.
+- This removes the separate inner iframe scrollbar; use the main page scroll only.
+- Height adjusts when embedded content changes and when the window is resized.
+- Preserves V28 design, GPS permissions, anytime driver location, map popup fixes, Supabase config, and existing app behavior.
 
-Install all files and folders to the root of the same GitHub Pages repository. Keep atlantic_companion beside index.html. Commit, wait for deployment, then hard refresh with Ctrl+F5. No Supabase changes required.
+Install:
+1. Extract ZIP.
+2. Replace all files and folders in the root of the existing GitHub Pages repository.
+3. Keep atlantic_companion beside the main index.html.
+4. Commit and wait for deployment.
+5. Refresh the live site with Ctrl+F5 (close/reopen installed app if needed).
+No Supabase changes required.

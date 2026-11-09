@@ -1,4 +1,4 @@
-const CACHE='atlantic-taxi-v26-company-hub';
+const CACHE='atlantic-taxi-v27-single-scroll';
 const CORE=['./','./index.html','./manifest.webmanifest','./icon.svg','./icon-512.png','./atlantic-cab-logo.png','./atlantic-cab-background.webp','./atlantic_companion/index.html','./atlantic_companion/atlantic-cab-logo.png','./atlantic_companion/manifest.webmanifest'];
 const PDF_LIB='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
 self.addEventListener('install',e=>e.waitUntil(
