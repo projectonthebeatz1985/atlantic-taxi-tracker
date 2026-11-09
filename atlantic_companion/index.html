@@ -140,4 +140,40 @@ installButton.onclick=async()=>{
 };
 $('closeInstallHelp').onclick=()=>installHelp.classList.add('hidden');
 if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));init();
-</script></body></html>
+</script><script>
+(function(){
+ if(window.parent===window)return;
+ let last=0,timer=0;
+ function report(){
+  try{
+   const body=document.body,root=document.documentElement;
+   const height=Math.max(
+    body?body.scrollHeight:0,
+    root?root.scrollHeight:0,
+    body?body.offsetHeight:0,
+    root?root.offsetHeight:0
+   );
+   if(height>0 && Math.abs(height-last)>8){
+    last=height;
+    window.parent.postMessage({type:'atlantic-hub-height',height:height},location.origin);
+   }
+  }catch(e){}
+ }
+ function schedule(){clearTimeout(timer);timer=setTimeout(report,120);}
+ window.addEventListener('load',function(){
+  report();[250,700,1500,3000].forEach(ms=>setTimeout(report,ms));
+  if(window.ResizeObserver){
+   const ro=new ResizeObserver(schedule);
+   if(document.body)ro.observe(document.body);
+   if(document.documentElement)ro.observe(document.documentElement);
+  }
+  if(window.MutationObserver && document.body){
+   const mo=new MutationObserver(schedule);
+   mo.observe(document.body,{childList:true,subtree:true,attributes:true,characterData:true});
+  }
+ });
+ window.addEventListener('resize',schedule);
+ if(document.readyState==='complete')schedule();
+})();
+</script>
+</body></html>

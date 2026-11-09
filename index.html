@@ -331,51 +331,21 @@ footer{text-align:center;color:#5f7263;font-size:12px;padding:14px 0 0}
 
 <section class="panel" id="driverhub" style="padding:0;margin:0">
 
- <iframe title="Atlantic Taxi Connect Company Hub" src="./atlantic_companion/index.html?staff=1" style="display:block;width:100%;height:650px;min-height:650px;border:0;border-radius:14px;background:transparent;overflow:visible" allow="geolocation *; clipboard-read; clipboard-write"></iframe>
+ <iframe title="Atlantic Taxi Connect Company Hub" src="./atlantic_companion/index.html?staff=1" style="display:block;width:100%;height:900px;min-height:650px;border:0;border-radius:14px;background:transparent;overflow:hidden" scrolling="no" allow="geolocation *; clipboard-read; clipboard-write"></iframe>
 </section>
 </main>
 <script>
 (function(){
  const frame=document.querySelector('#driverhub iframe');
  if(!frame)return;
- let resizeTimer=null;
- function fitHub(){
-  try{
-   const doc=frame.contentDocument;
-   if(!doc||!doc.body||!doc.documentElement)return;
-   const main=doc.querySelector('main');
-   const body=doc.body;
-   const root=doc.documentElement;
-   // Measure the embedded app's actual content, not the iframe viewport.
-   const height=Math.max(
-    main ? main.scrollHeight + 28 : 0,
-    body.scrollHeight,
-    root.scrollHeight,
-    700
-   );
-   frame.style.height=Math.ceil(height)+'px';
-  }catch(e){
-   // Keep the embedded app usable if same-origin sizing is unavailable.
-   frame.style.height='900px';
-  }
- }
- function scheduleFit(){
-  clearTimeout(resizeTimer);
-  resizeTimer=setTimeout(fitHub,180);
- }
- frame.addEventListener('load',function(){
-  fitHub();
-  // Map tiles and dashboard sections can finish loading after the HTML.
-  setTimeout(fitHub,500);
-  setTimeout(fitHub,1400);
-  setTimeout(fitHub,2800);
+ window.addEventListener('message',function(event){
+  if(event.source!==frame.contentWindow)return;
+  const data=event.data;
+  if(!data||data.type!=='atlantic-hub-height')return;
+  const height=Number(data.height);
+  if(!Number.isFinite(height)||height<500||height>12000)return;
+  frame.style.height=Math.ceil(height+12)+'px';
  });
- window.addEventListener('resize',scheduleFit);
- if(frame.contentDocument&&frame.contentDocument.readyState==='complete'){
-  fitHub();
-  setTimeout(fitHub,500);
-  setTimeout(fitHub,1400);
- }
 })();
 </script>
 
