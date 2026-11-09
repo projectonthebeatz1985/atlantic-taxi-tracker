@@ -1,0 +1,9 @@
+ATLANTIC TAXI TRACKER V35 — MAP POPUP CONTAINED CLOSE BUTTON
+
+Based on V34.
+- Popup bubble has a minimum width so the close X fits inside it.
+- Close button is positioned within the bubble with consistent padding.
+- Dark name text remains readable.
+- No GPS, dispatch, Supabase, or main tracker design changes.
+
+Install all files and folders to the root of the same GitHub Pages repository. Keep atlantic_companion beside index.html. Commit, wait for deployment, then hard refresh with Ctrl+F5. No Supabase changes required.
