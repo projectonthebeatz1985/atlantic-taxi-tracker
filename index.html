@@ -330,12 +330,8 @@ footer{text-align:center;color:#5f7263;font-size:12px;padding:14px 0 0}
 </section>
 </main>
 
-<section class="panel" id="driverhub">
- <div style="padding:14px 14px 8px">
-  <div style="font-weight:800;font-size:18px">Atlantic Taxi Connect — Company Hub</div>
-  <div style="font-size:12px;opacity:.75;margin-top:4px">Dispatch and driver tools. Sign in with your existing company or driver account.</div>
- </div>
- <iframe title="Atlantic Taxi Connect Company Hub" src="./atlantic_companion/index.html?staff=1" style="display:block;width:100%;height:900px;min-height:650px;border:0;border-radius:14px;background:transparent;overflow:hidden" scrolling="no" allow="geolocation *; clipboard-read; clipboard-write"></iframe>
+<section class="panel" id="driverhub" style="padding:0;margin:0">
+ <iframe title="Atlantic Taxi Connect Company Hub" src="./atlantic_companion/index.html?staff=1" style="display:block;width:100%;height:650px;min-height:650px;border:0;border-radius:14px;background:transparent;overflow:visible" allow="geolocation *; clipboard-read; clipboard-write"></iframe>
 </section>
 <script>
 (function(){
@@ -344,19 +340,53 @@ footer{text-align:center;color:#5f7263;font-size:12px;padding:14px 0 0}
  function fitHub(){
   try{
    const doc=frame.contentDocument;
-   if(!doc)return;
+   if(!doc||!doc.body||!doc.documentElement)return;
    const body=doc.body, root=doc.documentElement;
-   const height=Math.max(body?body.scrollHeight:0,root?root.scrollHeight:0,650);
-   frame.style.height=(height+8)+'px';
-   if(!frame.__hubObserver && window.ResizeObserver){
-    frame.__hubObserver=new ResizeObserver(()=>requestAnimationFrame(fitHub));
-    if(body)frame.__hubObserver.observe(body);
-    if(root)frame.__hubObserver.observe(root);
+   // Let the embedded document report its full natural content height.
+   body.style.height='auto';
+   root.style.height='auto';
+   body.style.overflow='visible';
+   root.style.overflow='visible';
+   let height=Math.max(
+    body.scrollHeight,root.scrollHeight,
+    body.offsetHeight,root.offsetHeight,800
+   );
+   // Include any content that extends beyond the body's normal flow.
+   for(const el of body.querySelectorAll('main,section,.card,#driverMap,#adminMap,#driverDashboard')){
+    const r=el.getBoundingClientRect();
+    height=Math.max(height,r.bottom+doc.defaultView.scrollY+24);
    }
+   frame.style.height=Math.ceil(height+16)+'px';
+  }catch(e){
+   // If sizing cannot be measured, keep the iframe scrollable as a fallback.
+   frame.style.overflow='auto';
+  }
+ }
+ function observeHub(){
+  try{
+   const doc=frame.contentDocument;
+   if(!doc||!doc.body)return;
+   fitHub();
+   if(!frame.__hubMutationObserver && window.MutationObserver){
+    frame.__hubMutationObserver=new MutationObserver(()=>requestAnimationFrame(fitHub));
+    frame.__hubMutationObserver.observe(doc.body,{childList:true,subtree:true,attributes:true,characterData:true});
+   }
+   if(!frame.__hubResizeObserver && window.ResizeObserver){
+    frame.__hubResizeObserver=new ResizeObserver(()=>requestAnimationFrame(fitHub));
+    frame.__hubResizeObserver.observe(doc.body);
+    frame.__hubResizeObserver.observe(doc.documentElement);
+   }
+   doc.defaultView.addEventListener('load',fitHub);
+   doc.defaultView.addEventListener('resize',fitHub);
+   setTimeout(fitHub,250);
+   setTimeout(fitHub,800);
+   setTimeout(fitHub,1800);
+   setTimeout(fitHub,3500);
   }catch(e){}
  }
- frame.addEventListener('load',()=>{fitHub();setTimeout(fitHub,250);setTimeout(fitHub,1000);});
+ frame.addEventListener('load',observeHub);
  window.addEventListener('resize',fitHub);
+ if(frame.contentDocument&&frame.contentDocument.readyState==='complete')observeHub();
 })();
 </script>
 
