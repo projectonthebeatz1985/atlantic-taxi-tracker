@@ -337,56 +337,44 @@ footer{text-align:center;color:#5f7263;font-size:12px;padding:14px 0 0}
 (function(){
  const frame=document.querySelector('#driverhub iframe');
  if(!frame)return;
+ let resizeTimer=null;
  function fitHub(){
   try{
    const doc=frame.contentDocument;
    if(!doc||!doc.body||!doc.documentElement)return;
-   const body=doc.body, root=doc.documentElement;
-   // Let the embedded document report its full natural content height.
-   body.style.height='auto';
-   root.style.height='auto';
-   body.style.overflow='visible';
-   root.style.overflow='visible';
-   let height=Math.max(
-    body.scrollHeight,root.scrollHeight,
-    body.offsetHeight,root.offsetHeight,800
+   const main=doc.querySelector('main');
+   const body=doc.body;
+   const root=doc.documentElement;
+   // Measure the embedded app's actual content, not the iframe viewport.
+   const height=Math.max(
+    main ? main.scrollHeight + 28 : 0,
+    body.scrollHeight,
+    root.scrollHeight,
+    700
    );
-   // Include any content that extends beyond the body's normal flow.
-   for(const el of body.querySelectorAll('main,section,.card,#driverMap,#adminMap,#driverDashboard')){
-    const r=el.getBoundingClientRect();
-    height=Math.max(height,r.bottom+doc.defaultView.scrollY+24);
-   }
-   frame.style.height=Math.ceil(height+16)+'px';
+   frame.style.height=Math.ceil(height)+'px';
   }catch(e){
-   // If sizing cannot be measured, keep the iframe scrollable as a fallback.
-   frame.style.overflow='auto';
+   // Keep the embedded app usable if same-origin sizing is unavailable.
+   frame.style.height='900px';
   }
  }
- function observeHub(){
-  try{
-   const doc=frame.contentDocument;
-   if(!doc||!doc.body)return;
-   fitHub();
-   if(!frame.__hubMutationObserver && window.MutationObserver){
-    frame.__hubMutationObserver=new MutationObserver(()=>requestAnimationFrame(fitHub));
-    frame.__hubMutationObserver.observe(doc.body,{childList:true,subtree:true,attributes:true,characterData:true});
-   }
-   if(!frame.__hubResizeObserver && window.ResizeObserver){
-    frame.__hubResizeObserver=new ResizeObserver(()=>requestAnimationFrame(fitHub));
-    frame.__hubResizeObserver.observe(doc.body);
-    frame.__hubResizeObserver.observe(doc.documentElement);
-   }
-   doc.defaultView.addEventListener('load',fitHub);
-   doc.defaultView.addEventListener('resize',fitHub);
-   setTimeout(fitHub,250);
-   setTimeout(fitHub,800);
-   setTimeout(fitHub,1800);
-   setTimeout(fitHub,3500);
-  }catch(e){}
+ function scheduleFit(){
+  clearTimeout(resizeTimer);
+  resizeTimer=setTimeout(fitHub,180);
  }
- frame.addEventListener('load',observeHub);
- window.addEventListener('resize',fitHub);
- if(frame.contentDocument&&frame.contentDocument.readyState==='complete')observeHub();
+ frame.addEventListener('load',function(){
+  fitHub();
+  // Map tiles and dashboard sections can finish loading after the HTML.
+  setTimeout(fitHub,500);
+  setTimeout(fitHub,1400);
+  setTimeout(fitHub,2800);
+ });
+ window.addEventListener('resize',scheduleFit);
+ if(frame.contentDocument&&frame.contentDocument.readyState==='complete'){
+  fitHub();
+  setTimeout(fitHub,500);
+  setTimeout(fitHub,1400);
+ }
 })();
 </script>
 

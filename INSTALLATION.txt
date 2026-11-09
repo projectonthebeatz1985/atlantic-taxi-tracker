@@ -1,17 +1,8 @@
-ATLANTIC TAXI TRACKER V38 — DRIVER HUB SCROLL FIX
+ATLANTIC TAXI TRACKER V39 — STABLE SINGLE SCROLL
 
-Based on V37.
-- Keeps the extra top gap removed.
-- Fixes the Driver Hub iframe height calculation so it expands to include the full map and the content below it.
-- Watches for late-loading dashboard/map content and recalculates the frame height.
-- Keeps the outer app as the single main scroll area, with iframe scrolling available as a fallback if content sizing cannot be measured.
-- Preserves GPS permission, anytime location sharing, map popup fixes, Supabase settings, and the V28 design.
+Based on V38.
+Fixes the runaway/infinite Driver Hub scrolling by removing the self-triggering MutationObserver/ResizeObserver height loop. The iframe is measured from its embedded main content at load and a few times after map/dashboard initialization, then on window resize only. This avoids continually increasing the iframe height.
 
-Install:
-1. Extract this ZIP.
-2. Replace all files/folders in the root of the same GitHub Pages repository.
-3. Keep atlantic_companion beside the main index.html.
-4. Commit and wait for GitHub Pages deployment.
-5. Refresh the live app with Ctrl+F5. If installed as a PWA, close and reopen it.
+Preserves V28 styling, small top gap, GPS sharing, Supabase settings, map popup styling, and Driver Hub.
 
-No Supabase changes required.
+Install all files/folders into the root of the same GitHub Pages repository, keeping atlantic_companion beside index.html. Commit, wait for deploy, then hard refresh (Ctrl+F5); close/reopen installed PWA if needed. No Supabase changes required.
