@@ -1,24 +1,19 @@
-ATLANTIC CAB CUSTOMER APP
+ATLANTIC CAB CUSTOMER APP — SEPARATE INSTALL
 
-Customer-only app URL after publishing:
+Customer URL:
 https://projectonthebeatz1985.github.io/atlantic-taxi-tracker/customer/
 
-Customers can:
-- Enter their private 8-digit ride code.
-- View ride status and live driver location.
-- View pickup and destination details.
-- Enable ride sound alerts.
+This is a separate installable app from the Atlantic Cab Staff & Driver app.
+Its manifest has its own app ID, name, icon set, start URL, and /customer/ scope.
+Its service worker has its own cache and /customer/ scope.
 
-Customers do NOT see:
-- Company/admin sign-in
-- Driver sign-in
-- Dispatch dashboard
-- Driver controls
-- Estimated fare or estimated miles
+Customers can enter a private ride code and view ride status/live driver location.
+Customers do not get staff/admin/driver login or dispatch tools.
 
-Staff access remains in the main Atlantic Taxi Tracker Driver Hub:
-- Main app: existing GitHub Pages root
-- Staff companion: /atlantic_companion/
+After publishing:
+1. Open the customer URL directly in Chrome.
+2. Use Chrome menu > Install app (or Add to Home screen).
+3. Name/icon should show Atlantic Customer / Atlantic Cab Customer.
+4. Keep the main Atlantic Cab Staff app installed separately for staff.
 
-Install:
-Open the customer URL on the customer's phone and use the browser menu > Install app / Add to Home screen.
+If the phone already installed the earlier customer build under the same old identity, remove that old customer shortcut/app from the home screen first, then install again from the customer URL. Do not uninstall or clear data for the staff app.

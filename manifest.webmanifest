@@ -1,8 +1,8 @@
 {
-  "name": "Atlantic Taxi Tracker",
-  "short_name": "Atlantic Cab",
+  "name": "Atlantic Cab Staff & Driver",
+  "short_name": "Atlantic Staff",
   "description": "Offline-first taxi fares, shift reports and yearly earnings.",
-  "start_url": "./",
+  "start_url": "./?app=staff",
   "scope": "./",
   "display": "standalone",
   "background_color": "#080d09",
@@ -20,5 +20,6 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "id": "./?app=staff"
 }

@@ -1,19 +1,24 @@
-ATLANTIC TAXI TRACKER V43 — CUSTOMER MAP FIX
+ATLANTIC TAXI TRACKER V44 — SEPARATE CUSTOMER PWA IDENTITY
 
-Based on V42.
-Fixes:
-- Removed a customer-mode CSS rule that kept the ride result section hidden even after a valid ride code was entered.
-- Shows the ride result section before initializing MapLibre, so the map gets real dimensions.
-- Resizes the map after the customer tracking screen is revealed.
-- Keeps customer-only experience, private ride code, driver location, status, pickup/destination, sound alerts, and no estimated fare display.
-- Staff/admin/driver app remains unchanged.
+Based on V43.
+Fixes the customer app being installed/opened as the same app as the staff tracker:
+- Staff app manifest has an explicit staff app ID, name, and start URL.
+- Customer app manifest has a distinct app ID, name, start URL, and strict /atlantic-taxi-tracker/customer/ scope.
+- Customer manifest and service worker are registered with explicit customer paths.
+- Customer service worker uses its own cache namespace.
+- Customer app icons and install identity are distinct from staff.
 
-Install:
-1. Extract this ZIP.
-2. Replace all files/folders in the root of your existing GitHub repository.
-3. Ensure the customer folder and atlantic_companion folder are both uploaded.
-4. Commit and wait for GitHub Pages deployment.
+Deploy:
+1. Extract ZIP.
+2. Upload all files/folders to the root of the same GitHub repository, preserving folder structure.
+3. Commit and wait for GitHub Pages deployment.
+4. Staff URL: https://projectonthebeatz1985.github.io/atlantic-taxi-tracker/
 5. Customer URL: https://projectonthebeatz1985.github.io/atlantic-taxi-tracker/customer/
-6. On phones, fully close and reopen the installed customer app, or refresh the customer URL.
 
+IMPORTANT PHONE REINSTALL:
+Because the previous install may already have saved the old identity:
+- Remove ONLY the old customer app shortcut/install from the phone.
+- Do not uninstall the staff app and do not clear its storage.
+- Open the customer URL directly in Chrome and choose Install app / Add to Home screen.
+- It should now install separately as Atlantic Cab Customer.
 No Supabase changes required.
