@@ -1,0 +1,78 @@
+ATLANTIC TAXI CONNECT — PRIVATE RIDE-CODE TRACKING (V2)
+======================================================
+
+WHAT CHANGED
+------------
+Customers no longer create accounts, enter email/password, or have customer profiles.
+Dispatch takes the booking by phone as usual, assigns a driver, and the app generates
+an 8-digit private ride code. Dispatch gives that code to the customer by phone or text.
+The customer downloads/opens Atlantic Taxi Connect, enters the code, and sees only that
+ride: driver name/vehicle (if entered), ride status, pickup/destination, estimated fare,
+and the driver's live map location. The code expires after 24 hours. Cancelled rides
+cannot be looked up. The customer does not book a taxi or pay in the app. Cash only.
+
+IMPORTANT: THIS IS A MIGRATION FOR YOUR EXISTING PROJECT
+-------------------------------------------------------
+You already ran the original schema.sql and configured your Supabase project. For your
+existing project, run ONLY schema_customer_codes.sql (not schema.sql again):
+1. Open Supabase > SQL Editor > New query.
+2. Open schema_customer_codes.sql from this folder in Notepad.
+3. Copy all of it into the SQL Editor and click Run once.
+4. It creates the ride-code table and secure lookup functions, and allows rides without
+   a customer login profile. It does not delete your existing admin or driver profiles.
+
+APP CONFIGURATION
+-----------------
+Open index.html in Notepad. Near the beginning of its script, find:
+  const SUPABASE_URL='YOUR_SUPABASE_PROJECT_URL';
+  const SUPABASE_ANON_KEY='YOUR_SUPABASE_ANON_PUBLIC_KEY';
+Paste the same Project URL and sb_publishable_... key you already configured in your
+previous working app. Keep the variable names and quote marks. Do not use service_role
+or secret keys. Save the file.
+
+HOW TO USE
+----------
+ADMIN / DISPATCH
+- Sign in under Company & driver sign in using your existing admin account.
+- Enter the pickup and destination, choose a driver, and estimated miles.
+- Click Create booking & generate code.
+- Give the displayed 8-digit code only to that customer. Copy code can copy it for texting.
+- Codes expire after 24 hours. Create a new booking/code if the ride needs a fresh code.
+
+DRIVER
+- Sign in with the existing driver account.
+- The assigned booking appears in Assigned rides.
+- Tap On my way, then Start sharing location and allow location permission.
+- Keep the app open during the approach; mobile browsers may pause GPS in the background.
+- Update Arrived / Start trip / Complete trip as appropriate. Collect cash directly.
+
+CUSTOMER
+- No sign-in, email, password, or customer profile.
+- Open Atlantic Taxi Connect and enter the 8-digit ride code supplied by dispatch.
+- The screen refreshes the ride and GPS location automatically about every 8 seconds.
+- The code only reveals the single ride linked to it, not other bookings.
+
+HOSTING / PHONE INSTALLATION
+----------------------------
+Serve the folder over HTTPS (for example, GitHub Pages). Do not open index.html with
+file:// for final use. On Android, open the HTTPS site in Chrome > menu > Install app /
+Add to Home screen. On iPhone, open in Safari > Share > Add to Home Screen.
+The app uses Leaflet/OpenStreetMap tiles and Supabase JS from CDNs, so internet access
+is needed. Test with a test booking and driver before using live customer journeys.
+
+SECURITY NOTES
+--------------
+- Keep Supabase Row Level Security enabled. Never put a service_role/secret key in the app.
+- Ride codes are 8 digits, stored as SHA-256 hashes in the database, and expire in 24h.
+- Share each code only with the customer for that booking. Do not post codes publicly.
+- This first code version has no SMS delivery; dispatch manually calls/texts the code.
+- Public code lookup returns only that ride's pickup/destination/status/fare, assigned
+driver display name/vehicle, and current location. It does not expose a list of rides.
+- For production, consider adding rate limiting / abuse monitoring and a professional
+  security review. GPS requires HTTPS and driver location permission; keep driver screen
+  active during pickup because browser background tracking is not guaranteed.
+
+FARE ESTIMATE
+-------------
+$3.50 starting fare + $2.90 per estimated mile. Final fare is entered by driver and
+collected in cash. No online payments or card data are supported.

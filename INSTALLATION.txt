@@ -1,21 +1,19 @@
-ATLANTIC TAXI TRACKER V41 — DRIVER HUB SCROLL OVERHAUL
+ATLANTIC TAXI TRACKER V43 — CUSTOMER MAP FIX
 
-Based on V40.
+Based on V42.
+Fixes:
+- Removed a customer-mode CSS rule that kept the ride result section hidden even after a valid ride code was entered.
+- Shows the ride result section before initializing MapLibre, so the map gets real dimensions.
+- Resizes the map after the customer tracking screen is revealed.
+- Keeps customer-only experience, private ride code, driver location, status, pickup/destination, sound alerts, and no estimated fare display.
+- Staff/admin/driver app remains unchanged.
 
-This update changes only how the embedded Driver Hub reports its full content height:
-- The Driver Hub now reports its natural document height to the main tracker.
-- The main tracker expands the iframe to that exact content height.
-- The nested iframe scrollbar is disabled, so the main page/tab scroll handles the whole Driver Hub like the other tabs.
-- Height updates are bounded and only applied when the actual content height changes, avoiding the runaway resize loop from earlier versions.
-- The map and content below it should remain reachable without a second scroll area.
-
-Preserves V28 styling, GPS sharing, map popup fixes, Supabase settings, and existing data/features.
-
-INSTALL:
+Install:
 1. Extract this ZIP.
-2. Replace all files and folders in the root of the same GitHub Pages repository.
-3. Keep atlantic_companion beside the main index.html.
+2. Replace all files/folders in the root of your existing GitHub repository.
+3. Ensure the customer folder and atlantic_companion folder are both uploaded.
 4. Commit and wait for GitHub Pages deployment.
-5. On phone, fully close the installed app, reopen it, and refresh the live page once to pick up the new service-worker cache.
+5. Customer URL: https://projectonthebeatz1985.github.io/atlantic-taxi-tracker/customer/
+6. On phones, fully close and reopen the installed customer app, or refresh the customer URL.
 
-No Supabase SQL changes required.
+No Supabase changes required.
