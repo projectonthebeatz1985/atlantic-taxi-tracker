@@ -1,24 +1,24 @@
-ATLANTIC TAXI TRACKER V44 — SEPARATE CUSTOMER PWA IDENTITY
+ATLANTIC TAXI TRACKER V45 — REMOVE ESTIMATED MILES & FARE
 
-Based on V43.
-Fixes the customer app being installed/opened as the same app as the staff tracker:
-- Staff app manifest has an explicit staff app ID, name, and start URL.
-- Customer app manifest has a distinct app ID, name, start URL, and strict /atlantic-taxi-tracker/customer/ scope.
-- Customer manifest and service worker are registered with explicit customer paths.
-- Customer service worker uses its own cache namespace.
-- Customer app icons and install identity are distinct from staff.
+Based on V44 Separate Customer App.
 
-Deploy:
-1. Extract ZIP.
-2. Upload all files/folders to the root of the same GitHub repository, preserving folder structure.
-3. Commit and wait for GitHub Pages deployment.
-4. Staff URL: https://projectonthebeatz1985.github.io/atlantic-taxi-tracker/
-5. Customer URL: https://projectonthebeatz1985.github.io/atlantic-taxi-tracker/customer/
+Changes in the staff/Driver Hub dispatch booking form:
+- Removed Estimated miles and Estimated fare fields.
+- Removed the estimate formula/explanation.
+- New bookings save zero in the legacy estimated_miles and estimated_fare database columns for compatibility; no estimate is shown to drivers or dispatch.
+- Driver assigned-ride cards no longer show an estimate.
+- Dispatch booking list no longer shows an estimate.
+- Editing cancelled rides now edits pickup and destination only.
+- Drivers still enter the actual final meter fare when pressing Complete trip. The final fare is saved to final_fare with the completion timestamp.
 
-IMPORTANT PHONE REINSTALL:
-Because the previous install may already have saved the old identity:
-- Remove ONLY the old customer app shortcut/install from the phone.
-- Do not uninstall the staff app and do not clear its storage.
-- Open the customer URL directly in Chrome and choose Install app / Add to Home screen.
-- It should now install separately as Atlantic Cab Customer.
-No Supabase changes required.
+Important:
+- Staff and customer apps remain separate.
+- Customer app, map, ride codes, GPS sharing, Supabase configuration, and V41 scrolling behavior are preserved.
+- No Supabase schema or SQL changes required.
+
+Install:
+1. Extract this ZIP.
+2. Upload all files and folders to the root of the existing GitHub repository, preserving customer/ and atlantic_companion/.
+3. Commit changes and wait for GitHub Pages deployment.
+4. Staff app remains at the repository root URL; customer app remains under /customer/.
+5. Refresh the staff app. On phones, fully close/reopen if the old cached version remains.
